@@ -1,0 +1,304 @@
+/* ============================================================
+   DESIGN TOKENS
+   Two-tier system: primitives → semantic tokens.
+   Edit via the token editor UI or directly here.
+
+   STRUCTURE:
+   1. Primitives     — raw values, never used directly in UI
+   2. Semantic       — purpose-named, reference primitives
+   3. Typography, Spacing, Radius, Shadows, Transitions
+   4. Legacy aliases — keeps existing pages working during migration
+   5. Light mode     — full semantic remapping for light theme
+   ============================================================ */
+
+
+/* ── 1. PRIMITIVES ──────────────────────────────────────────
+   Raw values only. Named by what they ARE, not how they're used.
+   Do not apply these directly to components — use semantic tokens.
+   ──────────────────────────────────────────────────────────── */
+:root {
+
+  /* Gray scale */
+  --gray-950: #0e0e10;
+  --gray-900: #18181c;
+  --gray-800: #222228;
+  --gray-700: #2e2e38;
+  --gray-600: #3e3e4a;
+  --gray-500: #7a7a8c;
+  --gray-400: #a0a0b8;
+  --gray-300: #c8c8d8;
+  --gray-200: #e0e0ec;
+  --gray-100: #f0f0f4;
+  --gray-50:  #f8f8fc;
+  --white:    #ffffff;
+
+  /* Accent — yellow-green */
+  --yellow-700: #6b7a00;
+  --yellow-600: #8fa800;
+  --yellow-500: #adc400;
+  --yellow-400: #c8f135;
+  --yellow-300: #d4f84a;
+  --yellow-200: #e2fa80;
+
+  /* Accent 2 — purple */
+  --purple-500: #7b61ff;
+  --purple-400: #9d87ff;
+
+  /* Status — blue (ideas) */
+  --blue-600:  #1a6fe8;
+  --blue-500:  #3a8fff;
+  --blue-400:  #6aaaff;
+
+  /* Status — slate (backlog) */
+  --slate-500: #7a7a8c;
+  --slate-400: #a0a0b8;
+
+  /* Status — orange (progress) */
+  --orange-500: #d4840a;
+  --orange-400: #f5a623;
+  --orange-300: #f7bc55;
+
+  /* Status — red (blocked + danger) */
+  --red-700:   #b0002a;
+  --red-600:   #d4244a;
+  --red-500:   #ff4d6d;
+  --red-400:   #ff7a93;
+
+  /* Status — green (done) */
+  --green-600: #1a9e62;
+  --green-500: #26c27a;
+  --green-400: #3ecf8e;
+  --green-300: #6edcaa;
+
+
+  /* ── 2. SEMANTIC TOKENS — DARK MODE (default) ───────────────
+     Named by PURPOSE. Reference primitives only.
+     ────────────────────────────────────────────────────────── */
+
+  /* Surface */
+  --semantic-bg-base:        var(--gray-950);
+  --semantic-bg-surface:     var(--gray-900);
+  --semantic-bg-surface-2:   var(--gray-800);
+  --semantic-bg-hover:       var(--gray-700);
+  --semantic-bg-disabled:    var(--gray-800);
+
+  /* Border */
+  --semantic-border-default:  var(--gray-700);
+  --semantic-border-focus:    var(--yellow-400);
+  --semantic-border-disabled: var(--gray-800);
+
+  /* Text & Icons */
+  --semantic-text-primary:   var(--gray-100);
+  --semantic-text-secondary: var(--gray-500);
+  --semantic-text-disabled:  var(--gray-700);
+  --semantic-text-inverse:   var(--gray-950);
+  --semantic-text-accent:    var(--yellow-400);
+  --semantic-text-danger:    var(--red-400);
+
+  /* Interactive / Accent */
+  --semantic-accent-default: var(--yellow-400);
+  --semantic-accent-hover:   var(--yellow-300);
+  --semantic-accent-pressed: var(--yellow-500);
+  --semantic-accent-subtle:  rgba(200, 241, 53, 0.1);
+  --semantic-accent-text:    var(--gray-950);
+
+  /* Destructive / Danger */
+  --semantic-danger-default: var(--red-500);
+  --semantic-danger-hover:   var(--red-400);
+  --semantic-danger-pressed: var(--red-600);
+  --semantic-danger-subtle:  rgba(255, 77, 109, 0.1);
+  --semantic-danger-text:    var(--white);
+
+  /* Status — foreground */
+  --semantic-status-ideas:    var(--blue-500);
+  --semantic-status-backlog:  var(--slate-400);
+  --semantic-status-progress: var(--orange-400);
+  --semantic-status-blocked:  var(--red-500);
+  --semantic-status-done:     var(--green-400);
+
+  /* Status — background tints */
+  --semantic-status-ideas-bg:    rgba(58, 143, 255, 0.15);
+  --semantic-status-backlog-bg:  rgba(160, 160, 184, 0.12);
+  --semantic-status-progress-bg: rgba(245, 166, 35, 0.15);
+  --semantic-status-blocked-bg:  rgba(255, 77, 109, 0.15);
+  --semantic-status-done-bg:     rgba(62, 207, 142, 0.15);
+
+
+  /* ── 3. TYPOGRAPHY ──────────────────────────────────────────
+     Not split into primitive/semantic — typography values
+     don't vary between light/dark mode.
+     ────────────────────────────────────────────────────────── */
+
+  --font-display:          'Syne', sans-serif;
+  --font-body:             'DM Mono', monospace;
+
+  --font-size-xs:          0.62rem;
+  --font-size-sm:          0.72rem;
+  --font-size-base:        0.82rem;
+  --font-size-md:          1rem;
+  --font-size-lg:          1.2rem;
+  --font-size-xl:          1.5rem;
+  --font-size-2xl:         2rem;
+
+  --font-weight-normal:    400;
+  --font-weight-medium:    500;
+  --font-weight-bold:      700;
+  --font-weight-black:     800;
+
+  --line-height-tight:     1.2;
+  --line-height-base:      1.5;
+
+  --letter-spacing-tight:  -0.02em;
+  --letter-spacing-wide:   0.06em;
+  --letter-spacing-wider:  0.08em;
+
+
+  /* ── 4. SPACING ─────────────────────────────────────────────
+     Primitives only — spacing doesn't vary by theme.
+     ────────────────────────────────────────────────────────── */
+
+  --space-1:   4px;
+  --space-2:   8px;
+  --space-3:   12px;
+  --space-4:   16px;
+  --space-5:   20px;
+  --space-6:   24px;
+  --space-7:   28px;
+  --space-8:   32px;
+  --space-10:  40px;
+  --space-12:  48px;
+
+
+  /* ── 5. BORDER RADIUS ───────────────────────────────────────*/
+
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   8px;
+  --radius-xl:   14px;
+  --radius-full: 9999px;
+
+
+  /* ── 6. SHADOWS ─────────────────────────────────────────────*/
+
+  --shadow-sm:     0 2px 8px rgba(0,0,0,0.2);
+  --shadow-md:     0 8px 24px rgba(0,0,0,0.3);
+  --shadow-lg:     0 16px 48px rgba(0,0,0,0.4);
+  --shadow-accent: 0 0 24px rgba(200,241,53,0.15);
+
+
+  /* ── 7. TRANSITIONS ─────────────────────────────────────────*/
+
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.2s ease;
+  --transition-slow: 0.3s ease;
+
+
+  /* ── 8. LEGACY ALIASES ──────────────────────────────────────
+     Keeps existing pages working until migrated to semantic tokens.
+     Do not use in new code.
+     Remove once index.html and backlog.html are fully migrated.
+     ────────────────────────────────────────────────────────── */
+
+  --bg:              var(--semantic-bg-base);
+  --surface:         var(--semantic-bg-surface);
+  --surface2:        var(--semantic-bg-surface-2);
+  --border:          var(--semantic-border-default);
+  --text:            var(--semantic-text-primary);
+  --muted:           var(--semantic-text-secondary);
+  --accent:          var(--semantic-accent-default);
+  --accent2:         var(--purple-500);
+  --row-hover:       var(--semantic-bg-hover);
+
+  --color-bg:        var(--semantic-bg-base);
+  --color-surface:   var(--semantic-bg-surface);
+  --color-surface2:  var(--semantic-bg-surface-2);
+  --color-border:    var(--semantic-border-default);
+  --color-text:      var(--semantic-text-primary);
+  --color-muted:     var(--semantic-text-secondary);
+  --color-accent:    var(--semantic-accent-default);
+  --color-accent2:   var(--purple-500);
+
+  --color-ideas:     var(--semantic-status-ideas);
+  --color-backlog:   var(--semantic-status-backlog);
+  --color-progress:  var(--semantic-status-progress);
+  --color-blocked:   var(--semantic-status-blocked);
+  --color-done:      var(--semantic-status-done);
+
+  --col-ideas:       var(--semantic-status-ideas);
+  --col-backlog:     var(--semantic-status-backlog);
+  --col-progress:    var(--semantic-status-progress);
+  --col-blocked:     var(--semantic-status-blocked);
+  --col-done:        var(--semantic-status-done);
+
+  /* ── CUSTOM TOKENS ──────────────────────────────────────────
+     Add your own below — the token editor will pick these up.
+     ────────────────────────────────────────────────────────── */
+
+}
+
+
+/* ── LIGHT MODE ─────────────────────────────────────────────
+   Full semantic remapping for light theme.
+   Primitives don't change — only semantic tokens remap.
+   ────────────────────────────────────────────────────────── */
+[data-theme="light"] {
+
+  /* Surface */
+  --semantic-bg-base:        var(--gray-50);
+  --semantic-bg-surface:     var(--white);
+  --semantic-bg-surface-2:   var(--gray-100);
+  --semantic-bg-hover:       var(--gray-200);
+  --semantic-bg-disabled:    var(--gray-200);
+
+  /* Border */
+  --semantic-border-default:  var(--gray-300);
+  --semantic-border-focus:    var(--yellow-600);
+  --semantic-border-disabled: var(--gray-200);
+
+  /* Text & Icons */
+  --semantic-text-primary:   var(--gray-950);
+  --semantic-text-secondary: var(--gray-500);
+  --semantic-text-disabled:  var(--gray-300);
+  --semantic-text-inverse:   var(--gray-100);
+  --semantic-text-accent:    var(--yellow-600);
+  --semantic-text-danger:    var(--red-600);
+
+  /* Interactive / Accent */
+  --semantic-accent-default: var(--yellow-500);
+  --semantic-accent-hover:   var(--yellow-600);
+  --semantic-accent-pressed: var(--yellow-700);
+  --semantic-accent-subtle:  rgba(173, 196, 0, 0.1);
+  --semantic-accent-text:    var(--white);
+
+  /* Destructive / Danger */
+  --semantic-danger-default: var(--red-600);
+  --semantic-danger-hover:   var(--red-500);
+  --semantic-danger-pressed: var(--red-700);
+  --semantic-danger-subtle:  rgba(212, 36, 74, 0.1);
+  --semantic-danger-text:    var(--white);
+
+  /* Status — same in light mode */
+  --semantic-status-ideas:    var(--blue-500);
+  --semantic-status-backlog:  var(--slate-400);
+  --semantic-status-progress: var(--orange-400);
+  --semantic-status-blocked:  var(--red-500);
+  --semantic-status-done:     var(--green-400);
+
+  /* Legacy aliases — light mode overrides */
+  --bg:             var(--semantic-bg-base);
+  --surface:        var(--semantic-bg-surface);
+  --surface2:       var(--semantic-bg-surface-2);
+  --border:         var(--semantic-border-default);
+  --text:           var(--semantic-text-primary);
+  --muted:          var(--semantic-text-secondary);
+  --accent:         var(--semantic-accent-default);
+  --row-hover:      var(--semantic-bg-hover);
+
+  --color-bg:       var(--semantic-bg-base);
+  --color-surface:  var(--semantic-bg-surface);
+  --color-surface2: var(--semantic-bg-surface-2);
+  --color-border:   var(--semantic-border-default);
+  --color-text:     var(--semantic-text-primary);
+  --color-muted:    var(--semantic-text-secondary);
+  --color-accent:   var(--semantic-accent-default);
+}

@@ -1,0 +1,2628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e10;
+    --surface: #18181c;
+    --surface2: #222228;
+    --border: #2e2e38;
+    --text: #f0f0f4;
+    --muted: #7a7a8c;
+    --accent: #c8f135;
+    --accent2: #7b61ff;
+
+    --col-ideas: #3a8fff;
+    --col-backlog: #a0a0b8;
+    --col-progress: #f5a623;
+    --col-blocked: #ff4d6d;
+    --col-done: #3ecf8e;
+  }
+
+  [data-theme="light"] {
+    --bg: #f4f4f0;
+    --surface: #ffffff;
+    --surface2: #ebebe6;
+    --border: #d8d8d0;
+    --text: #18181c;
+    --muted: #6a6a7c;
+    --accent: #5a8a00;
+    --accent2: #7b61ff;
+  }
+
+  /* Light-mode contrast overrides for tags, status, badges */
+  [data-theme="light"] .tag-ideas    { background: rgba(58,143,255,0.18);  color: #1a5fc4; }
+  [data-theme="light"] .tag-backlog  { background: rgba(120,120,140,0.18); color: #4a4a5c; }
+  [data-theme="light"] .tag-progress { background: rgba(245,166,35,0.22);  color: #a86c00; }
+  [data-theme="light"] .tag-blocked  { background: rgba(255,77,109,0.18);  color: #c4042e; }
+  [data-theme="light"] .tag-done     { background: rgba(62,207,142,0.22);  color: #1a8050; }
+
+  [data-theme="light"] .status-pill.tag-ideas    { color: #1a5fc4; }
+  [data-theme="light"] .status-pill.tag-progress { color: #a86c00; }
+  [data-theme="light"] .status-pill.tag-blocked  { color: #c4042e; }
+  [data-theme="light"] .status-pill.tag-done     { color: #1a8050; }
+
+  [data-theme="light"] .due-soon    { color: #a86c00; background: rgba(245,166,35,0.15); }
+  [data-theme="light"] .due-overdue { color: #c4042e; background: rgba(255,77,109,0.15); }
+  [data-theme="light"] .estimate-badge { color: #6a6a7c; background: var(--surface2); border-color: var(--border); }
+
+  [data-theme="light"] .btn-primary { background: var(--accent); color: #ffffff; border-color: var(--accent); }
+  [data-theme="light"] .btn-primary:hover { background: #4a7400; }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .theme-toggle {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+    line-height: 1;
+  }
+  .theme-toggle:hover { border-color: var(--muted); }
+
+  /* HEADER */
+  header {
+    padding: 28px 36px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    background: rgba(14,14,16,0.92);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  [data-theme="light"] header {
+    background: rgba(244,244,240,0.92);
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+
+  .btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 8px 16px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0e0e10;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  .btn-primary:hover { background: #d4f84a; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .btn-ghost:hover { background: var(--surface2); color: var(--text); border-color: var(--muted); }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex;
+    gap: 0;
+    padding: 0 36px;
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+  }
+
+  .stat {
+    padding: 14px 24px;
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+
+  .stat:first-child { padding-left: 0; }
+
+  .stat-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* BOARD */
+  .board-wrapper {
+    padding: 28px 36px 40px;
+    overflow-x: auto;
+  }
+
+  .board {
+    display: flex;
+    gap: 16px;
+    min-width: max-content;
+    align-items: flex-start;
+  }
+
+  .column {
+    width: 260px;
+    flex-shrink: 0;
+  }
+
+  .col-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 10px;
+  }
+
+  .col-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .col-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .col-count {
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--surface2);
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+
+  .col-body {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 80px;
+  }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+    transition: all 0.15s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--col-color, var(--border));
+    border-radius: 2px 0 0 2px;
+  }
+
+  .card:hover {
+    border-color: var(--muted);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .card-title {
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.4;
+    margin-bottom: 8px;
+    padding-left: 8px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 8px;
+  }
+
+  .tag {
+    font-size: 0.62rem;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  .card-date {
+    font-size: 0.62rem;
+    color: var(--muted);
+  }
+
+  .card-delete {
+    position: absolute;
+    top: 8px; right: 8px;
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.15s;
+    padding: 2px 5px;
+    border-radius: 4px;
+  }
+
+  .card:hover .card-delete {
+    opacity: 1;
+  }
+
+  .card-delete:hover {
+    background: rgba(255,77,109,0.2);
+    color: var(--col-blocked);
+  }
+
+  /* EMPTY STATE */
+  .col-empty {
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.72rem;
+  }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .modal-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    width: 100%;
+    max-width: 480px;
+    transform: translateY(10px);
+    transition: transform 0.2s;
+  }
+
+  .modal-overlay.open .modal {
+    transform: translateY(0);
+  }
+
+  .modal-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .modal-subtitle {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  input, textarea, select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    resize: vertical;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+  }
+
+  select option {
+    background: var(--surface2);
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 24px;
+    justify-content: flex-end;
+  }
+
+  /* GITHUB LINK */
+  .github-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.7rem;
+    color: var(--muted);
+    text-decoration: none;
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    transition: all 0.15s;
+  }
+
+  .github-link:hover {
+    color: var(--text);
+    border-color: var(--muted);
+    background: var(--surface2);
+  }
+
+  /* COLUMN COLORS */
+  .col-ideas .col-dot, .col-ideas .card { --col-color: var(--col-ideas); }
+  .col-backlog .col-dot, .col-backlog .card { --col-color: var(--col-backlog); }
+  .col-progress .col-dot, .col-progress .card { --col-color: var(--col-progress); }
+  .col-blocked .col-dot, .col-blocked .card { --col-color: var(--col-blocked); }
+  .col-done .col-dot, .col-done .card { --col-color: var(--col-done); }
+
+  .col-ideas .col-dot { background: var(--col-ideas); }
+  .col-backlog .col-dot { background: var(--col-backlog); }
+  .col-progress .col-dot { background: var(--col-progress); }
+  .col-blocked .col-dot { background: var(--col-blocked); }
+  .col-done .col-dot { background: var(--col-done); }
+
+  .tag-ideas { background: rgba(58,143,255,0.15); color: var(--col-ideas); }
+  .tag-backlog { background: rgba(160,160,184,0.12); color: var(--col-backlog); }
+  .tag-progress { background: rgba(245,166,35,0.15); color: var(--col-progress); }
+  .tag-blocked { background: rgba(255,77,109,0.15); color: var(--col-blocked); }
+  .tag-done { background: rgba(62,207,142,0.15); color: var(--col-done); }
+
+  /* CARD DETAIL MODAL */
+  .card-detail-field {
+    margin-bottom: 14px;
+  }
+
+  .card-detail-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .card-detail-value {
+    font-size: 0.82rem;
+    line-height: 1.5;
+  }
+
+  .status-select-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 6px;
+  }
+
+  .status-pill {
+    font-size: 0.65rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    font-family: 'DM Mono', monospace;
+    transition: all 0.15s;
+  }
+
+  .status-pill.active {
+    border-color: currentColor;
+  }
+
+  .status-pill:not(.active) {
+    opacity: 0.4;
+  }
+
+  .status-pill:hover { opacity: 1; }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    z-index: 300;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.25s;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* ASSIGNEE BADGES */
+  .assignee-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    margin-left: -4px;
+    border: 1px solid var(--surface);
+    cursor: default;
+    position: relative;
+  }
+
+  .assignee-badge:first-child { margin-left: 0; }
+
+  .assignee-badges {
+    display: flex;
+    align-items: center;
+  }
+
+  /* DUE DATE */
+  .due-badge {
+    font-size: 0.58rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .due-ok     { color: var(--muted); }
+  .due-soon   { color: #f5a623; background: rgba(245,166,35,0.1); }
+  .due-overdue { color: #ff4d6d; background: rgba(255,77,109,0.1); }
+
+  /* ESTIMATE BADGE */
+  .estimate-badge {
+    font-size: 0.58rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* CARD FOOTER */
+  .card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 8px;
+    margin-top: 6px;
+    gap: 6px;
+  }
+
+  /* SEARCH */
+  .search-wrap {
+    position: relative;
+  }
+  .search-wrap input {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px 6px 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text);
+    outline: none;
+    width: 160px;
+    transition: border-color 0.15s, width 0.2s;
+  }
+  .search-wrap input:focus { border-color: var(--accent); width: 200px; }
+  .search-wrap input::placeholder { color: var(--muted); }
+  .search-icon {
+    position: absolute; left: 8px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted); font-size: 0.72rem; pointer-events: none;
+  }
+
+  /* ARCHIVE VIEW */
+  .archive-list {
+    padding: 24px 36px 40px;
+  }
+
+  .archive-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .archive-item-title { flex: 1; color: var(--text); }
+
+  /* NOTES INDICATOR */
+  .notes-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
+    flex-shrink: 0;
+    opacity: 0.8;
+  }
+
+  /* NAV BAR */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    padding: 0 36px;
+    background: var(--bg);
+  }
+
+  [data-theme="light"] .nav-bar { background: var(--bg); }
+
+  .nav-link {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    padding: 10px 16px;
+    color: var(--muted);
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .nav-link:hover { color: var(--text); }
+  .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── FILTER BAR (shared component) ────────────────────────── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 36px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    background: var(--bg);
+  }
+
+  .filter-trigger {
+    position: relative;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .filter-trigger:hover { color: var(--text); border-color: var(--muted); }
+  .filter-trigger.active { color: var(--accent); border-color: var(--accent); background: rgba(200,241,53,0.06); }
+
+  .filter-trigger-badge {
+    background: var(--accent);
+    color: #0e0e10;
+    font-weight: 700;
+    font-size: 0.6rem;
+    padding: 1px 5px;
+    border-radius: 8px;
+    min-width: 14px;
+    text-align: center;
+  }
+
+  .active-chips { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; flex: 1; }
+
+  .active-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 7px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.62rem;
+    color: var(--text);
+    white-space: nowrap;
+  }
+  .active-chip-label { color: var(--muted); margin-right: 2px; }
+  .active-chip-x { cursor: pointer; opacity: 0.5; padding-left: 2px; }
+  .active-chip-x:hover { opacity: 1; color: #ff4d6d; }
+
+  .filter-clear {
+    font-size: 0.62rem; background: none; border: 1px solid transparent;
+    color: var(--muted); cursor: pointer; padding: 3px 8px; border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+  }
+  .filter-clear:hover { color: #ff4d6d; border-color: rgba(255,77,109,0.3); }
+
+  .preset-chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 14px;
+    font-size: 0.65rem; color: var(--muted); cursor: pointer;
+    font-family: 'DM Mono', monospace; transition: all 0.15s;
+  }
+  .preset-chip:hover { color: var(--text); border-color: var(--muted); }
+  .preset-chip-x { opacity: 0.4; cursor: pointer; font-size: 0.6rem; }
+  .preset-chip-x:hover { opacity: 1; color: #ff4d6d; }
+
+  .filter-panel {
+    position: absolute; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px; z-index: 150; width: 320px;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.4);
+    display: flex; flex-direction: column; gap: 14px;
+    max-height: 70vh; overflow-y: auto;
+  }
+
+  .filter-section-label {
+    font-size: 0.58rem; text-transform: uppercase;
+    letter-spacing: 0.1em; color: var(--muted);
+    font-weight: 700; margin-bottom: 5px;
+  }
+
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .filter-chip {
+    font-size: 0.62rem; padding: 3px 8px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 4px; color: var(--muted); cursor: pointer;
+    font-family: 'DM Mono', monospace; transition: all 0.1s;
+    user-select: none;
+  }
+  .filter-chip:hover { color: var(--text); }
+  .filter-chip.selected { background: var(--accent); color: #0e0e10; border-color: var(--accent); }
+
+  .filter-actions {
+    display: flex; gap: 6px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .filter-actions .btn { font-size: 0.65rem; padding: 5px 10px; flex: 1; justify-content: center; }
+
+  @media (max-width: 600px) {
+    .filter-bar { padding: 8px 16px; }
+    .filter-panel { position: fixed; left: 16px !important; right: 16px !important; width: auto !important; top: auto !important; bottom: 16px; }
+  }
+
+  /* ── PRINT STYLES ────────────────────────────────────────── */
+  @media print {
+    @page { size: landscape; margin: 0.4in; }
+    body { background: #fff !important; color: #000 !important; font-size: 9pt; }
+
+    /* Hide chrome */
+    header, .nav-bar, .filter-bar, .modal-overlay, .toast, .stats-bar,
+    .card-delete, .archive-list, #trash-list { display: none !important; }
+
+    .board-wrapper { padding: 0 !important; overflow: visible !important; }
+
+    /* Title */
+    .board::before {
+      content: "Roadmap — " attr(data-print-date);
+      display: block;
+      font-family: 'Syne', sans-serif;
+      font-size: 16pt;
+      font-weight: 800;
+      margin-bottom: 12px;
+      color: #000;
+      width: 100%;
+    }
+
+    /* Board: split into 2 rows of columns to fit landscape */
+    .board {
+      flex-wrap: wrap !important;
+      min-width: 0 !important;
+      gap: 10px !important;
+      align-items: stretch !important;
+    }
+    .column { width: calc(20% - 8px) !important; flex-shrink: 1 !important; min-width: 0 !important; page-break-inside: avoid; }
+
+    .col-header { padding: 4px 6px !important; border-bottom: 1.5px solid #000 !important; margin-bottom: 6px !important; }
+    .col-title { font-size: 9pt !important; color: #000 !important; }
+    .col-count { background: none !important; color: #000 !important; border: 1px solid #888 !important; }
+    .col-dot { display: inline-block !important; }
+
+    .card {
+      background: #fff !important;
+      border: 1px solid #888 !important;
+      box-shadow: none !important;
+      page-break-inside: avoid;
+      transform: none !important;
+      padding: 6px 8px 6px 10px !important;
+      animation: none !important;
+    }
+    .card::before { background: #000 !important; }
+    .card-title { font-size: 8.5pt !important; padding-left: 4px !important; color: #000 !important; }
+    .card-meta, .card-footer { padding-left: 4px !important; }
+
+    .tag, .due-badge, .estimate-badge {
+      background: none !important;
+      border: 1px solid #888 !important;
+      color: #000 !important;
+    }
+    .tag-blocked, .due-overdue { color: #c00 !important; border-color: #c00 !important; }
+    .tag-done, .due-soon { color: #060 !important; border-color: #060 !important; }
+    .assignee-badge { background: #444 !important; color: #fff !important; border: none !important; }
+
+    .col-empty { display: none !important; }
+    a[href]::after { content: ""; }
+  }
+
+  /* ── COMMENTS ────────────────────────────────────────────── */
+  .comment {
+    display: flex;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .comment:last-of-type { border-bottom: none; }
+  .comment-avatar {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.55rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .comment-body { flex: 1; min-width: 0; }
+  .comment-meta {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    margin-bottom: 3px;
+  }
+  .comment-author { font-size: 0.68rem; font-weight: 700; color: var(--text); }
+  .comment-time   { font-size: 0.6rem; color: var(--muted); }
+  .comment-text   { font-size: 0.75rem; line-height: 1.5; color: var(--text); word-wrap: break-word; }
+  .comment-delete {
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 0.65rem; padding: 0 4px;
+    opacity: 0; transition: opacity 0.1s;
+  }
+  .comment:hover .comment-delete { opacity: 0.5; }
+  .comment-delete:hover { opacity: 1 !important; color: #ff4d6d; }
+
+  /* ── DRAG AND DROP ───────────────────────────────────────── */
+  .card[draggable="true"] { cursor: grab; }
+  .card[draggable="true"]:active { cursor: grabbing; }
+
+  .card.dragging {
+    opacity: 0.35;
+    pointer-events: none;
+    transform: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Drop zone highlight when a card is dragged over a column */
+  .col-body.drag-over {
+    background: rgba(200,241,53,0.04);
+    outline: 2px dashed rgba(200,241,53,0.4);
+    outline-offset: -3px;
+    border-radius: 6px;
+  }
+
+  /* Drop indicator line between cards */
+  .drop-indicator {
+    height: 3px;
+    background: var(--accent);
+    border-radius: 2px;
+    margin: 3px 0;
+    pointer-events: none;
+  }
+
+  /* Floating drag ghost (used for touch) */
+  #drag-ghost {
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    width: 240px;
+    opacity: 0.92;
+    transform: rotate(2deg);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--accent);
+    padding: 12px 14px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+
+  /* ── MARKDOWN RENDERED CONTENT ───────────────────────────── */
+  .md-rendered {
+    font-size: 0.82rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+  }
+  .md-rendered p { margin: 0 0 8px; }
+  .md-rendered p:last-child { margin-bottom: 0; }
+  .md-rendered strong { font-weight: 700; color: var(--text); }
+  .md-rendered em { font-style: italic; }
+  .md-rendered code {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .md-rendered pre {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    overflow-x: auto;
+    margin: 8px 0;
+  }
+  .md-rendered pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: inherit;
+  }
+  .md-rendered a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .md-rendered a:hover { text-decoration: none; }
+  .md-rendered ul, .md-rendered ol {
+    margin: 6px 0 8px 18px;
+    padding: 0;
+  }
+  .md-rendered li { margin-bottom: 3px; }
+  .md-rendered hr {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 10px 0;
+  }
+  .md-rendered h1, .md-rendered h2, .md-rendered h3 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    margin: 10px 0 6px;
+  }
+  .md-rendered h1 { font-size: 1.05rem; }
+  .md-rendered h2 { font-size: 0.95rem; }
+  .md-rendered h3 { font-size: 0.85rem; }
+  .md-rendered blockquote {
+    border-left: 3px solid var(--border);
+    padding: 2px 0 2px 10px;
+    margin: 6px 0;
+    color: var(--muted);
+  }
+
+  .md-toggle {
+    display: inline-block;
+    font-size: 0.6rem;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    margin-left: 8px;
+  }
+  .md-toggle:hover { color: var(--accent); background: var(--surface2); }
+
+  /* card-delete always visible on touch */
+  @media (hover: none) {
+    .card-delete { opacity: 1; }
+  }
+
+  @media (max-width: 600px) {
+    header {
+      padding: 14px 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .logo { font-size: 1rem; }
+
+    .header-actions { gap: 6px; }
+
+    /* Hide GitHub link text on mobile, keep icon */
+    .github-link span { display: none; }
+    .github-link { padding: 6px 10px; }
+
+    .btn { padding: 7px 12px; font-size: 0.68rem; }
+
+    .stats-bar {
+      padding: 0 16px;
+      gap: 0;
+    }
+
+    .stat {
+      min-width: 80px;
+      padding: 10px 14px;
+    }
+
+    .stat-num { font-size: 1.1rem; }
+    .stat-label { font-size: 0.58rem; }
+
+    .board-wrapper { padding: 16px 12px 40px; }
+
+    /* Stack columns vertically on mobile */
+    .board {
+      flex-direction: column;
+      min-width: unset;
+      width: 100%;
+    }
+
+    .column { width: 100%; }
+
+    .modal { padding: 20px 16px; border-radius: 10px; }
+    .modal-title { font-size: 1rem; }
+    .modal-actions { flex-direction: column-reverse; }
+    .modal-actions .btn { width: 100%; justify-content: center; }
+
+    .toast { bottom: 16px; right: 16px; left: 16px; text-align: center; }
+
+    .status-select-row { gap: 6px; }
+    .status-pill { font-size: 0.6rem; padding: 4px 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- AUTH LOCK SCREEN — shown until user signs in -->
+<div id="auth-lock-screen" style="position:fixed;inset:0;background:var(--bg);z-index:1000;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:24px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:36px;width:360px;max-width:calc(100vw - 32px);text-align:center">
+    <div style="font-size:1.6rem;margin-bottom:12px">🔐</div>
+    <div style="font-family:'Syne',sans-serif;font-size:1.2rem;font-weight:800;margin-bottom:6px">Sign In</div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-bottom:20px;line-height:1.6">Sign in to access the roadmap.</div>
+    <input type="email" id="auth-email" placeholder="email@example.com" autocomplete="email"
+      style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text);outline:none;margin-bottom:8px;transition:border-color 0.15s"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'">
+    <input type="password" id="auth-password" placeholder="password" autocomplete="current-password"
+      style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text);outline:none;margin-bottom:12px;transition:border-color 0.15s"
+      onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+      onkeydown="if(event.key==='Enter')authSignIn()">
+    <button onclick="authSignIn()" style="width:100%;background:var(--accent);color:#0e0e10;border:none;border-radius:8px;padding:11px;font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800;cursor:pointer;transition:filter 0.15s" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">Sign In</button>
+    <div id="auth-error" style="font-size:0.65rem;color:#ff4d6d;margin-top:10px;min-height:14px"></div>
+    <div style="font-size:0.62rem;color:var(--muted);margin-top:16px;line-height:1.6">No account?<br>Have an admin create one in Supabase → Authentication → Users.</div>
+  </div>
+</div>
+
+<nav class="nav-bar">
+  <a href="index.html" class="nav-link active">📋 Roadmap</a>
+  <a href="backlog.html" class="nav-link">📝 Backlog</a>
+  <a href="token-editor.html" class="nav-link">🎨 Token Editor</a>
+</nav>
+
+<header>
+  <div class="logo">
+    <span class="logo-dot"></span>
+    Roadmap
+  </div>
+  <div class="header-actions">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="kanban-search" placeholder="Search… (/)" oninput="filterCards()" onclick="this.focus()">
+    </div>
+    <a href="https://github.com/YOUR-REPO/issues/new" target="_blank" class="github-link" id="github-issues-link">
+      <!-- github icon -->
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+      Submit via GitHub
+    </a>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle dark/light mode">🌙</button>
+    <button class="btn btn-ghost" onclick="archiveDone()" title="Move all Done items to archive (A)">Archive Done</button>
+    <button class="btn btn-ghost" onclick="toggleArchiveView()" id="archive-btn">Archive</button>
+    <button class="btn btn-ghost" onclick="openExport()">Export</button>
+    <button class="btn btn-ghost" onclick="window.print()" title="Print this view">🖨</button>
+    <button class="btn btn-ghost" onclick="authSignOut()" title="Sign out" style="font-size:0.65rem;color:var(--muted)">Sign out</button>
+    <button class="btn btn-primary" onclick="openSubmitModal()">+ Submit Idea</button>
+  </div>
+</header>
+
+<div class="stats-bar" id="stats-bar"></div>
+
+<div class="filter-bar" id="filter-bar"></div>
+
+<div class="board-wrapper" id="board-wrapper">
+  <div class="board" id="board"></div>
+</div>
+
+<div class="archive-list" id="archive-list" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+    <div style="font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800">Archived Items</div>
+    <button class="btn btn-ghost" onclick="clearArchive()" style="font-size:0.65rem;color:#ff4d6d;border-color:rgba(255,77,109,0.3)">Clear All</button>
+  </div>
+  <div id="archive-items"></div>
+</div>
+
+<!-- SUBMIT MODAL -->
+<div class="modal-overlay" id="submit-modal">
+  <div class="modal">
+    <div class="modal-title">Submit an Idea</div>
+    <div class="modal-subtitle">Ideas go into the queue for review — thanks for contributing!</div>
+
+    <div class="form-group">
+      <label>Title *</label>
+      <input type="text" id="idea-title" placeholder="Short description of your idea..." maxlength="120">
+    </div>
+    <div class="form-group">
+      <label>Details</label>
+      <textarea id="idea-desc" rows="3" placeholder="Why is this useful? Any context?"></textarea>
+    </div>
+    <div class="form-group">
+      <label>Your name (optional)</label>
+      <input type="text" id="idea-name" placeholder="Anonymous is fine">
+    </div>
+
+    <!-- Formspree form - replace ACTION_URL with your Formspree endpoint -->
+    <div class="form-group" style="padding: 12px; background: var(--surface2); border-radius: 6px; border: 1px solid var(--border);">
+      <div style="font-size:0.68rem; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.06em;">📧 Also send via email</div>
+      <form id="formspree-form" action="https://formspree.io/f/REPLACE_WITH_YOUR_FORM_ID" method="POST" target="_blank" style="display:flex; gap: 8px; align-items: center;">
+        <input type="hidden" name="idea-title" id="fs-title">
+        <input type="hidden" name="idea-details" id="fs-desc">
+        <input type="hidden" name="submitted-by" id="fs-name">
+        <button type="submit" class="btn btn-ghost" style="font-size:0.68rem; padding: 6px 12px;" onclick="syncFormspree()">Send email copy</button>
+        <span style="font-size:0.65rem; color: var(--muted);">Optional — sends a copy to the team</span>
+      </form>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('submit-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="submitIdea()">Add to Ideas</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARD DETAIL MODAL -->
+<div class="modal-overlay" id="detail-modal">
+  <div class="modal">
+    <div class="modal-title" id="detail-title"></div>
+    <div style="margin-bottom:20px;" id="detail-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('detail-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT MODAL -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-title">Export Data</div>
+    <div style="display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:14px">
+      <button class="btn" id="export-tab-csv" onclick="setExportTab('csv')" style="border:none;border-radius:0;border-bottom:2px solid var(--accent);color:var(--accent);background:none">CSV</button>
+      <button class="btn" id="export-tab-json" onclick="setExportTab('json')" style="border:none;border-radius:0;border-bottom:2px solid transparent;color:var(--muted);background:none">JSON</button>
+    </div>
+    <div style="font-size:0.65rem;color:var(--muted);margin-bottom:10px" id="export-hint">CSV — paste directly into Google Sheets, Excel, or Numbers.</div>
+    <pre id="export-box" tabindex="0" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:14px;font-size:0.7rem;line-height:1.7;white-space:pre;overflow:auto;max-height:300px;color:var(--muted);font-family:'DM Mono',monospace;margin:0"></pre>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal('export-modal')">Close</button>
+      <button class="btn btn-ghost" id="download-btn" onclick="downloadExport()">Download File</button>
+      <button class="btn btn-primary" id="copy-btn" onclick="copyExport()">Copy</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script src="data.js"></script>
+<script>
+// ─── DATA LAYER ───────────────────────────────────────────────────────────────
+// All shared logic (storage, schema, helpers) lives in data.js.
+const {
+  STATUSES, STATUS_LABELS, ALL_TAGS, PRIORITIES, RECUR_DAYS,
+  AVATAR_COLORS, DUE_RANGES,
+  escHtml, renderMarkdown,
+  avatarColor, initials, assigneeBadgesHTML, dueBadgeHTML, suffix,
+  normalizeItem, currentUser, setCurrentUser,
+  LocalStorageAdapter, SupabaseAdapter,
+  csvEscape, itemsToCSV,
+  shouldRecurToday, spawnRecurrence, describeRecurrence
+} = window.DataLayer;
+
+// ── SUPABASE CLIENT ───────────────────────────────────────────────────────────
+const supabaseClient = window.supabase.createClient(
+  window.APP_CONFIG.SUPABASE_URL,
+  window.APP_CONFIG.SUPABASE_ANON_KEY
+);
+
+const storage = new SupabaseAdapter(supabaseClient);
+const ALL_STATUSES = STATUSES;
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+async function authSignIn() {
+  const email = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  const errEl = document.getElementById('auth-error');
+  errEl.textContent = '';
+  if (!email || !password) { errEl.textContent = 'Email and password required'; return; }
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) { errEl.textContent = error.message; return; }
+  // onAuthStateChange handler will hide the lock screen and init the app
+}
+
+async function authSignOut() {
+  await supabaseClient.auth.signOut();
+  location.reload();
+}
+
+// Listen for auth state changes
+supabaseClient.auth.onAuthStateChange((event, session) => {
+  if (session?.user?.email) {
+    setCurrentUser(session.user.email);
+    document.getElementById('auth-lock-screen').style.display = 'none';
+    if (!_appInitialized) initApp();
+  } else {
+    document.getElementById('auth-lock-screen').style.display = '';
+  }
+});
+
+let _appInitialized = false;
+
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const GITHUB_ISSUES_URL = 'https://github.com/YOUR-USERNAME/YOUR-REPO/issues/new?template=idea.md&labels=idea';
+document.getElementById('github-issues-link').href = GITHUB_ISSUES_URL;
+
+const STORAGE_KEY = 'backlog_items';
+
+const COLUMNS = [
+  { id: 'ideas',    label: 'Ideas / Submitted', cls: 'col-ideas',    tagCls: 'tag-ideas' },
+  { id: 'backlog',  label: 'Backlog',            cls: 'col-backlog',  tagCls: 'tag-backlog' },
+  { id: 'progress', label: 'In Progress',        cls: 'col-progress', tagCls: 'tag-progress' },
+  { id: 'blocked',  label: 'Blocked',            cls: 'col-blocked',  tagCls: 'tag-blocked' },
+  { id: 'done',     label: 'Done',               cls: 'col-done',     tagCls: 'tag-done' },
+];
+
+// Default team — edit here or via backlog settings
+let team = ['Alice', 'Bob', 'Kate', 'Sam'];
+
+let showArchive = false;
+
+// ─── INITIAL DATA ─────────────────────────────────────────────────────────────
+// Edit this array to add/remove/move items. Claude will update this for you!
+// Note: if localStorage has saved data, that takes precedence on load.
+let items = [
+  {
+    id: 1,
+    title: 'Set up GitHub repo & enable GitHub Pages',
+    status: 'progress',
+    tag: 'Setup',
+    desc: 'Create the repo, push index.html, enable Pages in settings.',
+    date: '2025-04-24',
+    notes: ''
+  },
+  {
+    id: 2,
+    title: 'Replace Formspree endpoint with real form ID',
+    status: 'backlog',
+    tag: 'Setup',
+    desc: 'Sign up at formspree.io, create a form, paste the ID into the HTML.',
+    date: '2025-04-24',
+    notes: ''
+  },
+  {
+    id: 3,
+    title: 'Update GitHub Issues URL in config section',
+    status: 'backlog',
+    tag: 'Setup',
+    desc: 'Find the GITHUB_ISSUES_URL const near the top of the script and update it.',
+    date: '2025-04-24',
+    notes: ''
+  },
+  {
+    id: 4,
+    title: 'Add SMS submission via Twilio (future)',
+    status: 'ideas',
+    tag: 'Feature',
+    desc: 'When ready, wire up a Twilio webhook that posts to the board.',
+    date: '2025-04-24',
+    notes: ''
+  },
+];
+
+let nextId = 100;
+
+// ─── RENDER ───────────────────────────────────────────────────────────────────
+function render() {
+  if (showArchive) { renderArchive(); return; }
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+
+  COLUMNS.forEach(col => {
+    const cards = items.filter(i =>
+      i.status === col.id &&
+      !i.archived &&
+      !i.deleted_at &&
+      itemMatchesFilter(i)
+    );
+    const colEl = document.createElement('div');
+    colEl.className = `column ${col.cls}`;
+    colEl.innerHTML = `
+      <div class="col-header">
+        <div class="col-title"><span class="col-dot"></span>${col.label}</div>
+        <span class="col-count">${cards.length}</span>
+      </div>
+      <div class="col-body" id="col-${col.id}"
+        ondragover="onDragOver(event, '${col.id}')"
+        ondragleave="onDragLeave(event)"
+        ondrop="onDrop(event, '${col.id}')">
+        ${cards.length === 0 ? `<div class="col-empty">Empty</div>` : ''}
+        ${cards.map(c => cardHTML(c, col)).join('')}
+      </div>
+    `;
+    board.appendChild(colEl);
+  });
+
+  renderStats();
+  initTouchDrag();
+}
+
+// ─── SHARED FILTER SYSTEM ─────────────────────────────────────────────────────
+let filterState = {
+  search: '',
+  statuses: [],
+  tags: [],
+  boards: [],
+  assignees: [],
+  dueRange: 'all'
+};
+
+function loadFilterState() {
+  try {
+    const saved = localStorage.getItem('kanban_filter_state');
+    if (saved) Object.assign(filterState, JSON.parse(saved));
+  } catch(e) {}
+}
+function saveFilterState() {
+  try { localStorage.setItem('kanban_filter_state', JSON.stringify(filterState)); } catch(e) {}
+}
+
+function activeFilterCount() {
+  let n = 0;
+  if (filterState.statuses.length) n++;
+  if (filterState.tags.length) n++;
+  if (filterState.boards.length) n++;
+  if (filterState.assignees.length) n++;
+  if (filterState.dueRange !== 'all') n++;
+  return n;
+}
+
+function clearAllFilters() {
+  filterState = { search: filterState.search, statuses: [], tags: [], boards: [], assignees: [], dueRange: 'all' };
+  saveFilterState();
+  renderFilterBar();
+  render();
+}
+
+function itemMatchesFilter(item) {
+  const q = filterState.search.toLowerCase();
+  if (q && !(item.title||'').toLowerCase().includes(q) && !(item.notes||'').toLowerCase().includes(q)) return false;
+  if (filterState.statuses.length && !filterState.statuses.includes(item.status)) return false;
+  if (filterState.tags.length && !filterState.tags.some(t => (item.tags||[]).includes(t))) return false;
+  if (filterState.boards.length && !filterState.boards.some(b => (item.boards||[]).includes(b))) return false;
+  if (filterState.assignees.length && !filterState.assignees.some(a => (item.assignees||[]).includes(a))) return false;
+  if (filterState.dueRange !== 'all') {
+    if (filterState.dueRange === 'none') {
+      if (item.due) return false;
+    } else {
+      if (!item.due) return false;
+      const d = new Date(item.due); const now = new Date();
+      const diff = (d - now) / 86400000;
+      if (filterState.dueRange === 'overdue' && diff >= 0) return false;
+      if (filterState.dueRange === 'week'  && (diff < 0 || diff > 7)) return false;
+      if (filterState.dueRange === 'month' && (diff < 0 || diff > 31)) return false;
+    }
+  }
+  return true;
+}
+
+function filterCards() {
+  filterState.search = document.getElementById('kanban-search')?.value || '';
+  saveFilterState();
+  render();
+}
+
+async function renderFilterBar() {
+  const bar = document.getElementById('filter-bar');
+  if (!bar) return;
+  const count = activeFilterCount();
+  const presets = await loadFilterPresets();
+
+  const chips = [];
+  filterState.statuses.forEach(s => chips.push({type:'statuses',val:s,label:STATUS_LABELS[s]||s}));
+  filterState.tags.forEach(t => chips.push({type:'tags',val:t,label:t}));
+  filterState.boards.forEach(b => chips.push({type:'boards',val:b,label:b}));
+  filterState.assignees.forEach(a => chips.push({type:'assignees',val:a,label:a}));
+  if (filterState.dueRange !== 'all') {
+    const dr = DUE_RANGES.find(d => d.id === filterState.dueRange);
+    chips.push({type:'dueRange',val:'all',label:`Due: ${dr.label}`});
+  }
+
+  bar.innerHTML = `
+    <button class="filter-trigger ${count?'active':''}" onclick="toggleFilterPanel(event)">
+      <span>🔎 Filters</span>
+      ${count ? `<span class="filter-trigger-badge">${count}</span>` : ''}
+    </button>
+    <div class="active-chips">
+      ${chips.map(c => `<span class="active-chip">
+        <span class="active-chip-label">${c.type === 'dueRange' ? '' : c.type.replace(/s$/,'')+':'}</span>${escHtml(c.label)}
+        <span class="active-chip-x" onclick="removeFilterValue('${c.type}','${escHtml(c.val)}')">×</span>
+      </span>`).join('')}
+      ${count > 0 ? `<button class="filter-clear" onclick="clearAllFilters()">Clear all</button>` : ''}
+    </div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap">
+      ${presets.map((p, i) => `<span class="preset-chip" onclick="applyPreset(${i})" title="Click to apply">
+        ${escHtml(p.name)}
+        <span class="preset-chip-x" onclick="event.stopPropagation();deletePreset(${i})">×</span>
+      </span>`).join('')}
+    </div>
+  `;
+}
+
+function removeFilterValue(type, val) {
+  if (type === 'dueRange') filterState.dueRange = 'all';
+  else filterState[type] = filterState[type].filter(x => x !== val);
+  saveFilterState();
+  renderFilterBar();
+  render();
+}
+
+let activeFilterPanel = null;
+function toggleFilterPanel(e) {
+  if (activeFilterPanel) { closeFilterPanel(); return; }
+  e.stopPropagation();
+  const trigger = e.currentTarget;
+  const rect = trigger.getBoundingClientRect();
+
+  const panel = document.createElement('div');
+  panel.className = 'filter-panel';
+  panel.id = 'active-filter-panel';
+  panel.style.top = (rect.bottom + 6) + 'px';
+  panel.style.left = rect.left + 'px';
+  panel.onclick = ev => ev.stopPropagation();
+
+  const allAssignees = [...new Set([...team, ...items.flatMap(i => i.assignees||[])])].filter(Boolean);
+  const allBoards = [...new Set(items.flatMap(i => i.boards||[]))];
+
+  panel.innerHTML = `
+    <div>
+      <div class="filter-section-label">Status</div>
+      <div class="filter-chips">
+        ${ALL_STATUSES.map(s => `<span class="filter-chip ${filterState.statuses.includes(s)?'selected':''}" onclick="toggleFilter('statuses','${s}')">${STATUS_LABELS[s]}</span>`).join('')}
+      </div>
+    </div>
+    <div>
+      <div class="filter-section-label">Tags</div>
+      <div class="filter-chips">
+        ${ALL_TAGS.map(t => `<span class="filter-chip ${filterState.tags.includes(t)?'selected':''}" onclick="toggleFilter('tags','${t}')">${t}</span>`).join('')}
+      </div>
+    </div>
+    ${allBoards.length ? `<div>
+      <div class="filter-section-label">Boards</div>
+      <div class="filter-chips">
+        ${allBoards.map(b => `<span class="filter-chip ${filterState.boards.includes(b)?'selected':''}" onclick="toggleFilter('boards','${escHtml(b)}')">${escHtml(b)}</span>`).join('')}
+      </div>
+    </div>` : ''}
+    ${allAssignees.length ? `<div>
+      <div class="filter-section-label">Assignees</div>
+      <div class="filter-chips">
+        ${allAssignees.map(a => `<span class="filter-chip ${filterState.assignees.includes(a)?'selected':''}" onclick="toggleFilter('assignees','${escHtml(a)}')">${escHtml(a)}</span>`).join('')}
+      </div>
+    </div>` : ''}
+    <div>
+      <div class="filter-section-label">Due Date</div>
+      <div class="filter-chips">
+        ${DUE_RANGES.map(r => `<span class="filter-chip ${filterState.dueRange===r.id?'selected':''}" onclick="setDueRange('${r.id}')">${r.label}</span>`).join('')}
+      </div>
+    </div>
+    <div class="filter-actions">
+      <button class="btn" onclick="clearAllFilters();closeFilterPanel()">Clear All</button>
+      <button class="btn btn-primary" onclick="savePresetPrompt()">Save as Preset</button>
+    </div>
+  `;
+  document.body.appendChild(panel);
+  activeFilterPanel = panel;
+  setTimeout(() => document.addEventListener('click', closeFilterPanel, { once: true }), 10);
+}
+
+function closeFilterPanel() {
+  if (activeFilterPanel) { activeFilterPanel.remove(); activeFilterPanel = null; }
+}
+
+function toggleFilter(type, val) {
+  const arr = filterState[type];
+  if (arr.includes(val)) filterState[type] = arr.filter(x => x !== val);
+  else arr.push(val);
+  saveFilterState();
+  renderFilterBar();
+  render();
+  if (event?.target) event.target.classList.toggle('selected');
+}
+
+function setDueRange(id) {
+  filterState.dueRange = id;
+  saveFilterState();
+  renderFilterBar();
+  render();
+  document.querySelectorAll('#active-filter-panel .filter-chip').forEach(c => {
+    DUE_RANGES.forEach(r => {
+      if (c.textContent.trim() === r.label) c.classList.toggle('selected', r.id === id);
+    });
+  });
+}
+
+// Filter presets — stored in Supabase per-user (Pattern B: private presets)
+async function loadFilterPresets() {
+  try { return await storage.loadPresets(); }
+  catch(e) { return []; }
+}
+async function saveFilterPresets(presets) {
+  try { await storage.savePresets(presets); }
+  catch(e) { console.error('saveFilterPresets failed', e); }
+}
+
+async function savePresetPrompt() {
+  const name = prompt('Name this filter preset:', '');
+  if (!name || !name.trim()) return;
+  const presets = await loadFilterPresets();
+  const existing = presets.findIndex(p => p.name === name.trim());
+  const preset = { name: name.trim(), state: JSON.parse(JSON.stringify(filterState)) };
+  if (existing >= 0) presets[existing] = preset;
+  else presets.push(preset);
+  await saveFilterPresets(presets);
+  closeFilterPanel();
+  renderFilterBar();
+  showToast(`✓ Saved preset "${name}"`);
+}
+
+async function applyPreset(idx) {
+  const presets = await loadFilterPresets();
+  if (!presets[idx]) return;
+  filterState = JSON.parse(JSON.stringify(presets[idx].state));
+  document.getElementById('kanban-search').value = filterState.search || '';
+  saveFilterState();
+  renderFilterBar();
+  render();
+  showToast(`✓ Applied "${presets[idx].name}"`);
+}
+
+async function deletePreset(idx) {
+  const presets = await loadFilterPresets();
+  if (!presets[idx]) return;
+  if (!confirm(`Delete preset "${presets[idx].name}"?`)) return;
+  presets.splice(idx, 1);
+  await saveFilterPresets(presets);
+  renderFilterBar();
+}
+
+function cardHTML(card, col) {
+  const tags = card.tags || (card.tag ? [card.tag] : []);
+  const tagsHTML = tags.length
+    ? tags.map(t => `<span class="tag ${col.tagCls}" style="margin-right:2px">${escHtml(t)}</span>`).join('')
+    : '';
+  const hasNotes = card.notes && card.notes.trim();
+  const isRecurring = card.recurring && card.recurring.pattern;
+  const hasSubtasks = card.subtasks && card.subtasks.length > 0;
+  const subtasksDone = hasSubtasks ? card.subtasks.filter(s => s.done).length : 0;
+  const commentCount = (card.comments||[]).length;
+  const badges = assigneeBadgesHTML(card.assignees);
+  const due = dueBadgeHTML(card.due);
+  const est = card.estimate ? `<span class="estimate-badge">${escHtml(card.estimate)}</span>` : '';
+
+  return `
+    <div class="card" draggable="true" data-id="${card.id}"
+      onclick="if(!_touchDragging)openDetail(${card.id})"
+      ondragstart="onDragStart(event, ${card.id})"
+      ondragend="onDragEnd(event)">
+      <button class="card-delete" onclick="deleteCard(event, ${card.id})" title="Delete" ondragstart="event.stopPropagation()">✕</button>
+      <div class="card-title">${escHtml(card.title)}</div>
+      ${hasSubtasks ? `
+        <div style="margin:5px 0 3px;height:3px;background:var(--surface2);border-radius:2px;overflow:hidden">
+          <div style="height:100%;background:${subtasksDone===card.subtasks.length?'#3ecf8e':'var(--accent)'};border-radius:2px;width:${Math.round(subtasksDone/card.subtasks.length*100)}%;transition:width 0.3s"></div>
+        </div>` : ''}
+      <div class="card-meta">
+        <div style="display:flex;flex-wrap:wrap;gap:3px;align-items:center">
+          ${tagsHTML}
+          ${hasNotes ? `<span class="notes-dot" title="Has notes"></span>` : ''}
+          ${isRecurring ? `<span title="${escHtml(describeRecurrence(card.recurring))}" style="font-size:0.65rem;opacity:0.7;line-height:1">🔁</span>` : ''}
+          ${hasSubtasks ? `<span style="font-size:0.6rem;color:${subtasksDone===card.subtasks.length?'#3ecf8e':'var(--muted)'};opacity:0.85">${subtasksDone}/${card.subtasks.length}</span>` : ''}
+          ${commentCount ? `<span style="font-size:0.6rem;color:var(--muted);opacity:0.75" title="${commentCount} comment${commentCount!==1?'s':''}">💬 ${commentCount}</span>` : ''}
+        </div>
+        <div style="display:flex;gap:4px;align-items:center">${est}${due}</div>
+      </div>
+      ${badges ? `<div class="card-footer">${badges}<span></span></div>` : ''}
+    </div>`;
+}
+
+function renderStats() {
+  const bar = document.getElementById('stats-bar');
+  const live = items.filter(i => !i.deleted_at);
+  const active = live.filter(i => !i.archived);
+  const total = active.length;
+  const done = active.filter(i => i.status === 'done').length;
+  const progress = active.filter(i => i.status === 'progress').length;
+  const blocked = active.filter(i => i.status === 'blocked').length;
+  const archived = live.filter(i => i.archived).length;
+  const trashed = items.filter(i => i.deleted_at).length;
+  bar.innerHTML = `
+    <div class="stat"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--col-done)">${done}</div><div class="stat-label">Done</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--col-progress)">${progress}</div><div class="stat-label">In Progress</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--col-blocked)">${blocked}</div><div class="stat-label">Blocked</div></div>
+    <div class="stat"><div class="stat-num" style="color:var(--accent)">${total>0?Math.round(done/total*100):0}%</div><div class="stat-label">Complete</div></div>
+    ${archived ? `<div class="stat"><div class="stat-num" style="color:var(--muted)">${archived}</div><div class="stat-label">Archived</div></div>` : ''}
+    ${trashed ? `<div class="stat" style="cursor:pointer" onclick="toggleTrashView()" title="Click to view trash"><div class="stat-num" style="color:var(--muted);opacity:0.6">${trashed}</div><div class="stat-label">Trash</div></div>` : ''}
+  `;
+}
+
+// ─── ARCHIVE ──────────────────────────────────────────────────────────────────
+function toggleArchiveView() {
+  showArchive = !showArchive;
+  document.getElementById('board-wrapper').style.display = showArchive ? 'none' : '';
+  document.getElementById('archive-list').style.display = showArchive ? '' : 'none';
+  document.getElementById('archive-btn').textContent = showArchive ? '← Board' : 'Archive';
+  if (showArchive) renderArchive();
+}
+
+function renderArchive() {
+  const archived = items.filter(i => i.archived && !i.deleted_at);
+  const el = document.getElementById('archive-items');
+  if (!archived.length) {
+    el.innerHTML = `<div style="text-align:center;color:var(--muted);padding:40px;font-size:0.75rem">No archived items yet.<br>Use "Archive Done" to move completed items here.</div>`;
+    return;
+  }
+  el.innerHTML = archived.map(item => `
+    <div class="archive-item">
+      <span class="archive-item-title">${escHtml(item.title)}</span>
+      ${assigneeBadgesHTML(item.assignees)}
+      <span style="font-size:0.62rem;color:var(--muted)">${item.date}</span>
+      <button class="btn btn-ghost" style="font-size:0.62rem;padding:3px 8px" onclick="restoreItem(${item.id})">Restore</button>
+    </div>`).join('');
+}
+
+// ─── TRASH VIEW (soft-deleted items) ──────────────────────────────────────────
+let showTrash = false;
+function toggleTrashView() {
+  showTrash = !showTrash;
+  showArchive = false;
+  document.getElementById('board-wrapper').style.display = showTrash ? 'none' : '';
+  document.getElementById('archive-list').style.display = 'none';
+  let trashEl = document.getElementById('trash-list');
+  if (!trashEl) {
+    trashEl = document.createElement('div');
+    trashEl.id = 'trash-list';
+    trashEl.className = 'archive-list';
+    document.getElementById('archive-list').after(trashEl);
+  }
+  trashEl.style.display = showTrash ? '' : 'none';
+  document.getElementById('archive-btn').textContent = showTrash ? '← Board' : 'Archive';
+  if (showTrash) renderTrash();
+  else render();
+}
+
+function renderTrash() {
+  const trashed = items.filter(i => i.deleted_at);
+  const el = document.getElementById('trash-list');
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+      <div style="font-family:'Syne',sans-serif;font-size:0.85rem;font-weight:800">Trash <span style="font-size:0.65rem;color:var(--muted);font-weight:400;margin-left:8px">${trashed.length} item${trashed.length!==1?'s':''}</span></div>
+      <button class="btn btn-ghost" onclick="emptyTrash()" style="font-size:0.65rem;color:#ff4d6d;border-color:rgba(255,77,109,0.3)">Empty Trash</button>
+    </div>
+    ${trashed.length ? trashed.map(item => `
+      <div class="archive-item">
+        <span class="archive-item-title">${escHtml(item.title)}</span>
+        <span style="font-size:0.62rem;color:var(--muted)" title="Deleted ${item.deleted_at}">deleted ${new Date(item.deleted_at).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+        <button class="btn btn-ghost" style="font-size:0.62rem;padding:3px 8px" onclick="recoverFromTrash(${item.id})">Recover</button>
+      </div>`).join('')
+    : `<div style="text-align:center;color:var(--muted);padding:40px;font-size:0.75rem">Trash is empty.</div>`}
+  `;
+}
+
+function recoverFromTrash(id) {
+  mutateItem(id, item => { item.deleted_at = null; });
+  renderTrash();
+  renderStats();
+  showToast('✓ Recovered');
+}
+
+async function emptyTrash() {
+  const trashed = items.filter(i => i.deleted_at);
+  if (!trashed.length) return;
+  if (!confirm(`Permanently delete ${trashed.length} item${trashed.length!==1?'s':''}? This cannot be undone.`)) return;
+  // Hard-delete each row in Supabase, then remove from local array
+  await Promise.all(trashed.map(i => storage.deleteItem(i.id).catch(e => console.error('deleteItem failed', e))));
+  items = items.filter(i => !i.deleted_at);
+  renderTrash();
+  renderStats();
+  showToast('Trash emptied');
+}
+
+async function archiveDone() {
+  const toArchive = items.filter(i => i.status === 'done' && !i.archived && !i.deleted_at);
+  if (!toArchive.length) { showToast('No done items to archive'); return; }
+  const now = new Date().toISOString();
+  toArchive.forEach(i => { i.archived = true; i.updated_at = now; });
+  render();
+  await Promise.all(toArchive.map(i => saveItem(i)));
+  showToast(`✓ ${toArchive.length} item${toArchive.length!==1?'s':''} archived`);
+}
+
+function restoreItem(id) {
+  mutateItem(id, item => { item.archived = false; item.status = 'backlog'; });
+  renderArchive();
+  renderStats();
+  showToast('✓ Restored to Backlog');
+}
+
+async function clearArchive() {
+  if (!confirm('Permanently delete all archived items?')) return;
+  const toDelete = items.filter(i => i.archived && !i.deleted_at);
+  const now = new Date().toISOString();
+  toDelete.forEach(i => { i.deleted_at = now; i.updated_at = now; });
+  renderArchive();
+  renderStats();
+  await Promise.all(toDelete.map(i => saveItem(i)));
+  showToast('Archive cleared (recoverable from Trash)');
+}
+
+// ─── SUBMIT ───────────────────────────────────────────────────────────────────
+function openSubmitModal() {
+  document.getElementById('idea-title').value = '';
+  document.getElementById('idea-desc').value = '';
+  document.getElementById('idea-name').value = '';
+  openModal('submit-modal');
+  setTimeout(() => document.getElementById('idea-title').focus(), 200);
+}
+
+async function submitIdea() {
+  const title = document.getElementById('idea-title').value.trim();
+  if (!title) { showToast('Please enter a title!'); return; }
+  const desc = document.getElementById('idea-desc').value.trim();
+  const submittedBy = document.getElementById('idea-name').value.trim() || currentUser();
+  const now = new Date().toISOString();
+  const newItem = {
+    id: null, // server assigns
+    title,
+    status: 'ideas',
+    tags: ['Idea'],
+    tag: 'Idea',
+    desc,
+    notes: '',
+    assignees: [],
+    boards: [],
+    priority: 'Medium',
+    due: '',
+    estimate: '',
+    archived: false,
+    deleted_at: null,
+    created_at: now,
+    created_by: submittedBy,
+    updated_at: now,
+    date: now.split('T')[0],
+    recurring: null,
+    last_recurred_at: null
+  };
+  closeModal('submit-modal');
+  try {
+    const saved = await storage.saveItem(newItem, items);
+    items.unshift(saved);
+    render();
+    showToast('✓ Idea added to the board!');
+  } catch (e) {
+    showToast('Submit failed: ' + e.message, 'error');
+  }
+}
+
+function syncFormspree() {
+  document.getElementById('fs-title').value = document.getElementById('idea-title').value;
+  document.getElementById('fs-desc').value = document.getElementById('idea-desc').value;
+  document.getElementById('fs-name').value = document.getElementById('idea-name').value;
+}
+
+// ─── DETAIL MODAL ─────────────────────────────────────────────────────────────
+function openDetail(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+
+  document.getElementById('detail-title').textContent = item.title;
+  const assigneeOptions = [...new Set([...team, ...(item.assignees||[])])];
+
+  document.getElementById('detail-body').innerHTML = `
+    <div class="card-detail-field">
+      <div class="card-detail-label">Description</div>
+      <div class="card-detail-value md-rendered">${item.desc ? renderMarkdown(item.desc) : '<span style="color:var(--muted)">No description</span>'}</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <div class="card-detail-label">Assignees</div>
+        <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px" id="detail-assignees">
+          ${(item.assignees||[]).map(a => `<span style="display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;background:${avatarColor(a)}22;border:1px solid ${avatarColor(a)}44;font-size:0.65rem;color:var(--text)">
+            <span style="width:14px;height:14px;border-radius:50%;background:${avatarColor(a)};display:inline-flex;align-items:center;justify-content:center;font-size:0.5rem;font-weight:700;color:#fff">${initials(a)}</span>
+            ${escHtml(a)}<span onclick="removeAssignee(${id},'${escHtml(a)}')" style="cursor:pointer;opacity:0.6;margin-left:2px">×</span>
+          </span>`).join('')}
+          <button onclick="openAssigneePicker(${id})" style="background:none;border:1px dashed var(--border);border-radius:12px;padding:2px 8px;font-size:0.62rem;color:var(--muted);cursor:pointer;font-family:'DM Mono',monospace">+ add</button>
+        </div>
+      </div>
+      <div>
+        <div class="card-detail-label">Priority</div>
+        <select onchange="updateItemField(${id},'priority',this.value)" style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text);outline:none">
+          ${['High','Medium','Low'].map(p => `<option ${item.priority===p?'selected':''}>${p}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+      <div>
+        <div class="card-detail-label">Due Date</div>
+        <input type="date" value="${item.due||''}" onchange="updateItemField(${id},'due',this.value)"
+          style="margin-top:4px;width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:5px 8px;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text);outline:none">
+      </div>
+      <div>
+        <div class="card-detail-label">Estimate</div>
+        <div style="display:flex;gap:4px;margin-top:4px">
+          ${['S','M','L'].map(e => `<button onclick="updateItemField(${id},'estimate','${e}')" style="flex:1;padding:5px;background:${item.estimate===e?'var(--accent)':'var(--surface2)'};color:${item.estimate===e?'#0e0e10':'var(--muted)'};border:1px solid var(--border);border-radius:4px;font-size:0.7rem;cursor:pointer;font-family:'DM Mono',monospace">${e}</button>`).join('')}
+          <input type="text" value="${item.estimate&&!['S','M','L'].includes(item.estimate)?item.estimate:''}" placeholder="Xh" maxlength="4"
+            onchange="updateItemField(${id},'estimate',this.value||'')"
+            style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:5px 6px;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text);outline:none;text-align:center">
+        </div>
+      </div>
+    </div>
+    <div class="card-detail-field">
+      <div class="card-detail-label">Recurring 🔁</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px">
+        <button class="status-pill ${!item.recurring?'active':''}" style="background:var(--surface2);color:${!item.recurring?'var(--text)':'var(--muted)'};border:1px solid ${!item.recurring?'var(--border)':'transparent'}" onclick="setKanbanRecurrence(${id},null)">Off</button>
+        <button class="status-pill ${item.recurring?.pattern==='daily'?'active':''}" style="background:rgba(58,143,255,0.15);color:var(--col-ideas);border:1px solid ${item.recurring?.pattern==='daily'?'var(--col-ideas)':'transparent'}" onclick="setKanbanRecurrence(${id},{pattern:'daily'})">Daily</button>
+        <button class="status-pill ${item.recurring?.pattern==='weekly'?'active':''}" style="background:rgba(245,166,35,0.15);color:var(--col-progress);border:1px solid ${item.recurring?.pattern==='weekly'?'var(--col-progress)':'transparent'}" onclick="setKanbanRecurrence(${id},{pattern:'weekly',day:item.recurring?.day||'Mon'})">Weekly</button>
+        <button class="status-pill ${item.recurring?.pattern==='monthly'?'active':''}" style="background:rgba(123,97,255,0.15);color:var(--accent2);border:1px solid ${item.recurring?.pattern==='monthly'?'var(--accent2)':'transparent'}" onclick="setKanbanRecurrence(${id},{pattern:'monthly',date:item.recurring?.date||1})">Monthly</button>
+      </div>
+      ${item.recurring?.pattern === 'weekly' ? `
+        <div style="display:flex;gap:3px;flex-wrap:wrap;margin-top:6px">
+          ${RECUR_DAYS.map(d => `<button class="status-pill ${item.recurring.day===d?'active':''}" style="background:var(--surface2);color:${item.recurring.day===d?'var(--accent)':'var(--muted)'};border:1px solid ${item.recurring.day===d?'var(--accent)':'transparent'};padding:3px 9px" onclick="setKanbanRecurrence(${id},{pattern:'weekly',day:'${d}'})">${d}</button>`).join('')}
+        </div>` : ''}
+      ${item.recurring?.pattern === 'monthly' ? `
+        <div style="margin-top:6px">
+          <label style="font-size:0.62rem;color:var(--muted)">Day of month: </label>
+          <input type="number" min="1" max="31" value="${item.recurring.date || 1}" style="width:60px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 6px;font-family:'DM Mono',monospace;font-size:0.7rem;color:var(--text);outline:none"
+            onchange="setKanbanRecurrence(${id},{pattern:'monthly',date:parseInt(this.value)||1})">
+        </div>` : ''}
+      ${item.recurring ? `<div style="font-size:0.62rem;color:var(--accent);margin-top:6px">${escHtml(describeRecurrence(item.recurring))}${item.last_recurred_at ? ` · <span style="color:var(--muted)">last spawned ${item.last_recurred_at}</span>` : ''}</div>` : ''}
+    </div>
+    <div class="card-detail-field">
+      <div class="card-detail-label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Subtasks ${item.subtasks&&item.subtasks.length ? `<span style="color:var(--muted);font-weight:400">${item.subtasks.filter(s=>s.done).length}/${item.subtasks.length}</span>` : ''}</span>
+      </div>
+      ${item.subtasks && item.subtasks.length ? `
+        <div style="margin:4px 0 6px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden">
+          <div style="height:100%;background:var(--accent);border-radius:2px;width:${Math.round(item.subtasks.filter(s=>s.done).length/item.subtasks.length*100)}%;transition:width 0.3s"></div>
+        </div>` : ''}
+      <div id="subtask-list" style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+        ${(item.subtasks||[]).map((st, i) => `
+          <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
+            <input type="checkbox" class="row-checkbox" ${st.done?'checked':''} onchange="toggleSubtask(${id},${i},this.checked)" style="flex-shrink:0">
+            <span style="flex:1;font-size:0.78rem;${st.done?'text-decoration:line-through;color:var(--muted)':''}">${escHtml(st.text)}</span>
+            <button onclick="removeSubtask(${id},${i})" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.7rem;padding:2px 4px;opacity:0.5" onmouseover="this.style.opacity=1;this.style.color='#ff4d6d'" onmouseout="this.style.opacity=0.5;this.style.color='var(--muted)'">✕</button>
+          </div>`).join('')}
+      </div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <input id="new-subtask-input" type="text" placeholder="Add a subtask…" maxlength="200"
+          style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 10px;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text);outline:none;transition:border-color 0.15s"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if(event.key==='Enter')addSubtask(${id})">
+        <button onclick="addSubtask(${id})" style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;font-family:'DM Mono',monospace;font-size:0.72rem;color:var(--text);cursor:pointer;transition:all 0.15s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">Add</button>
+      </div>
+    </div>
+    <div class="card-detail-field">
+      <div class="card-detail-label">Notes <span class="md-toggle" onclick="toggleNotesPreview()" id="notes-toggle">Preview</span> <span style="font-size:0.55rem;color:var(--muted);margin-left:4px">supports **bold** *italic* \`code\` [links](url) lists # headers</span></div>
+      <textarea id="detail-notes" rows="4" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-family:'DM Mono',monospace;font-size:0.78rem;color:var(--text);outline:none;resize:vertical;transition:border-color 0.15s" placeholder="Add notes — markdown supported" onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)';saveNotes(${id},this.value)">${escHtml(item.notes||'')}</textarea>
+      <div id="detail-notes-preview" class="md-rendered" style="display:none;margin-top:8px;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;min-height:40px"></div>
+    </div>
+    <div class="card-detail-field">
+      <div class="card-detail-label">Move to</div>
+      <div class="status-select-row">
+        ${COLUMNS.map(c => `
+          <button class="status-pill tag-${c.id} ${c.id === item.status ? 'active' : ''}"
+            onclick="moveCard(${id}, '${c.id}')">${c.label}</button>
+        `).join('')}
+        <button class="status-pill" style="background:rgba(160,160,184,0.1);color:var(--muted)" onclick="archiveItem(${id})">Archive</button>
+      </div>
+    </div>
+    <div class="card-detail-field">
+      <div class="card-detail-label">Comments <span style="color:var(--muted);font-weight:400">${(item.comments||[]).length || ''}</span></div>
+      <div id="comments-list" style="margin:6px 0 10px">
+        ${(item.comments||[]).length === 0
+          ? `<div style="font-size:0.72rem;color:var(--muted);padding:6px 0">No comments yet.</div>`
+          : (item.comments||[]).map((c, i) => `
+            <div class="comment">
+              <div class="comment-avatar" style="background:${avatarColor(c.author)}">${initials(c.author)}</div>
+              <div class="comment-body">
+                <div class="comment-meta">
+                  <span class="comment-author">${escHtml(c.author)}</span>
+                  <span class="comment-time">${new Date(c.created_at).toLocaleString('en-US',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'})}</span>
+                  ${c.author === currentUser() ? `<button class="comment-delete" onclick="deleteComment(${id},${i})" title="Delete">✕</button>` : ''}
+                </div>
+                <div class="comment-text">${escHtml(c.text)}</div>
+              </div>
+            </div>`).join('')}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <textarea id="new-comment-input" rows="2" placeholder="Add a comment…"
+          style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'DM Mono',monospace;font-size:0.75rem;color:var(--text);outline:none;resize:vertical;transition:border-color 0.15s"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"
+          onkeydown="if((event.metaKey||event.ctrlKey)&&event.key==='Enter')addComment(${id})"></textarea>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:0.6rem;color:var(--muted)">Cmd+Enter to post</span>
+          <button onclick="addComment(${id})" style="background:var(--accent);color:#0e0e10;border:none;border-radius:6px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:700;cursor:pointer;transition:filter 0.15s" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">Post</button>
+        </div>
+      </div>
+    </div>
+  `;
+  openModal('detail-modal');
+}
+
+function updateItemField(id, field, value) {
+  mutateItem(id, item => { item[field] = value; });
+  render();
+}
+
+function openAssigneePicker(id) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const allOptions = [...new Set([...team, ...(item.assignees||[])])].filter(a => !(item.assignees||[]).includes(a));
+  const name = allOptions.length
+    ? prompt(`Add assignee:\n\nTeam: ${team.join(', ')}\n\nType a name or pick from team:`, '')
+    : prompt('Add assignee name:', '');
+  if (!name || !name.trim()) return;
+  mutateItem(id, item => {
+    if (!item.assignees) item.assignees = [];
+    if (!item.assignees.includes(name.trim())) {
+      item.assignees.push(name.trim());
+      if (!team.includes(name.trim())) team.push(name.trim());
+    }
+  });
+  render();
+  openDetail(id);
+}
+
+function removeAssignee(id, name) {
+  mutateItem(id, item => {
+    item.assignees = (item.assignees||[]).filter(a => a !== name);
+  });
+  render();
+  openDetail(id);
+}
+
+function archiveItem(id) {
+  mutateItem(id, item => { item.archived = true; });
+  render();
+  closeModal('detail-modal');
+  showToast('✓ Archived');
+}
+
+function setKanbanRecurrence(id, pattern) {
+  mutateItem(id, item => { item.recurring = pattern; });
+  render();
+  openDetail(id); // refresh modal to show updated UI
+}
+
+function saveNotes(id, value) {
+  mutateItem(id, item => { item.notes = value; });
+}
+
+// ─── SUBTASKS ─────────────────────────────────────────────────────────────────
+function addSubtask(id) {
+  const input = document.getElementById('new-subtask-input');
+  const text = input?.value.trim();
+  if (!text) return;
+  mutateItem(id, item => {
+    if (!item.subtasks) item.subtasks = [];
+    item.subtasks.push({ id: Date.now(), text, done: false });
+  });
+  input.value = '';
+  openDetail(id); // refresh modal to show new subtask
+}
+
+function toggleSubtask(id, idx, done) {
+  mutateItem(id, item => {
+    if (item.subtasks && item.subtasks[idx]) item.subtasks[idx].done = done;
+  });
+  // Update progress bar without full modal refresh
+  const item = items.find(i => i.id === id);
+  if (!item || !item.subtasks) return;
+  const total = item.subtasks.length;
+  const complete = item.subtasks.filter(s => s.done).length;
+  const bar = document.querySelector('#subtask-list')?.previousElementSibling?.querySelector('div');
+  if (bar) bar.style.width = Math.round(complete/total*100) + '%';
+  render(); // update notes-dot on card
+}
+
+function removeSubtask(id, idx) {
+  mutateItem(id, item => {
+    if (item.subtasks) item.subtasks.splice(idx, 1);
+  });
+  openDetail(id);
+}
+
+// ─── COMMENTS ─────────────────────────────────────────────────────────────────
+function addComment(id) {
+  const input = document.getElementById('new-comment-input');
+  const text = input?.value.trim();
+  if (!text) return;
+  const now = new Date().toISOString();
+  mutateItem(id, item => {
+    if (!item.comments) item.comments = [];
+    item.comments.push({
+      id: Date.now(),
+      text,
+      author: currentUser(),
+      created_at: now
+    });
+  });
+  openDetail(id); // refresh modal to show new comment
+}
+
+function deleteComment(id, idx) {
+  mutateItem(id, item => {
+    if (item.comments) item.comments.splice(idx, 1);
+  });
+  openDetail(id);
+}
+
+function toggleNotesPreview() {
+  const ta = document.getElementById('detail-notes');
+  const prev = document.getElementById('detail-notes-preview');
+  const toggle = document.getElementById('notes-toggle');
+  if (!ta || !prev || !toggle) return;
+  if (prev.style.display === 'none') {
+    prev.innerHTML = renderMarkdown(ta.value) || '<span style="color:var(--muted)">Nothing to preview</span>';
+    prev.style.display = '';
+    ta.style.display = 'none';
+    toggle.textContent = 'Edit';
+  } else {
+    prev.style.display = 'none';
+    ta.style.display = '';
+    toggle.textContent = 'Preview';
+    ta.focus();
+  }
+}
+
+function moveCard(id, newStatus) {
+  const notesEl = document.getElementById('detail-notes');
+  mutateItem(id, item => {
+    if (notesEl) item.notes = notesEl.value;
+    item.status = newStatus;
+  });
+  render();
+  closeModal('detail-modal');
+  showToast('✓ Moved!');
+}
+
+// ─── DRAG AND DROP ────────────────────────────────────────────────────────────
+let _draggingId = null;
+let _draggingSourceCol = null;
+
+function onDragStart(e, id) {
+  _draggingId = id;
+  const item = items.find(i => i.id === id);
+  _draggingSourceCol = item?.status || null;
+
+  // Set drag data (required for Firefox)
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', String(id));
+
+  // Delay adding .dragging so the browser captures the original card as the ghost
+  requestAnimationFrame(() => {
+    const el = document.querySelector(`.card[data-id="${id}"]`);
+    if (el) el.classList.add('dragging');
+  });
+}
+
+function onDragEnd(e) {
+  // Clean up dragging state
+  document.querySelectorAll('.card.dragging').forEach(el => el.classList.remove('dragging'));
+  document.querySelectorAll('.col-body.drag-over').forEach(el => el.classList.remove('drag-over'));
+  document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+  _draggingId = null;
+  _draggingSourceCol = null;
+}
+
+function onDragOver(e, colId) {
+  e.preventDefault(); // Required — without this, drop never fires
+  e.dataTransfer.dropEffect = 'move';
+
+  const colBody = document.getElementById(`col-${colId}`);
+  if (!colBody) return;
+
+  // Add highlight
+  document.querySelectorAll('.col-body.drag-over').forEach(el => {
+    if (el !== colBody) el.classList.remove('drag-over');
+  });
+  colBody.classList.add('drag-over');
+
+  // Show drop indicator line between cards
+  document.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+  const afterEl = getDragAfterElement(colBody, e.clientY);
+  const indicator = document.createElement('div');
+  indicator.className = 'drop-indicator';
+  if (afterEl) {
+    colBody.insertBefore(indicator, afterEl);
+  } else {
+    colBody.appendChild(indicator);
+  }
+}
+
+function onDragLeave(e) {
+  // Only remove highlight if leaving the col-body entirely (not entering a child)
+  const colBody = e.currentTarget;
+  if (!colBody.contains(e.relatedTarget)) {
+    colBody.classList.remove('drag-over');
+    colBody.querySelectorAll('.drop-indicator').forEach(el => el.remove());
+  }
+}
+
+function onDrop(e, colId) {
+  e.preventDefault();
+  const id = _draggingId ?? parseInt(e.dataTransfer.getData('text/plain'));
+  if (!id) return;
+
+  onDragEnd(e); // clean up visual state
+
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  if (item.status === colId) return; // dropped in same column — no-op
+
+  // Optimistic update
+  const prevStatus = item.status;
+  item.status = colId;
+  render();
+
+  // Persist
+  storage.saveItem(item, items).catch(err => {
+    // Rollback on failure
+    item.status = prevStatus;
+    render();
+    showToast('Move failed: ' + err.message, 'error');
+  });
+}
+
+// Find the card element the cursor is above, to position the drop indicator
+function getDragAfterElement(container, y) {
+  const cards = [...container.querySelectorAll('.card:not(.dragging)')];
+  return cards.reduce((closest, child) => {
+    const box = child.getBoundingClientRect();
+    const offset = y - box.top - box.height / 2;
+    if (offset < 0 && offset > closest.offset) {
+      return { offset, element: child };
+    }
+    return closest;
+  }, { offset: Number.NEGATIVE_INFINITY }).element;
+}
+
+// ─── TOUCH DRAG AND DROP ──────────────────────────────────────────────────────
+// Touch devices don't fire HTML5 drag events. We simulate DnD using
+// touchstart/touchmove/touchend with a floating ghost element.
+let _touchDragging = false;
+let _touchId = null;
+let _touchGhost = null;
+let _touchStartX = 0;
+let _touchStartY = 0;
+const TOUCH_DRAG_THRESHOLD = 8; // px before drag starts
+
+function initTouchDrag() {
+  // Wire up touch handlers after each render via event delegation on the board
+  const board = document.getElementById('board');
+  if (!board || board._touchDragWired) return;
+  board._touchDragWired = true;
+
+  board.addEventListener('touchstart', e => {
+    const card = e.target.closest('.card[draggable]');
+    if (!card) return;
+    _touchId = parseInt(card.dataset.id);
+    _touchStartX = e.touches[0].clientX;
+    _touchStartY = e.touches[0].clientY;
+    _touchDragging = false;
+  }, { passive: true });
+
+  board.addEventListener('touchmove', e => {
+    if (!_touchId) return;
+    const dx = Math.abs(e.touches[0].clientX - _touchStartX);
+    const dy = Math.abs(e.touches[0].clientY - _touchStartY);
+
+    if (!_touchDragging && (dx > TOUCH_DRAG_THRESHOLD || dy > TOUCH_DRAG_THRESHOLD)) {
+      _touchDragging = true;
+      const card = board.querySelector(`.card[data-id="${_touchId}"]`);
+      if (card) card.classList.add('dragging');
+      _touchGhost = createTouchGhost(_touchId);
+      document.body.appendChild(_touchGhost);
+    }
+
+    if (!_touchDragging) return;
+    e.preventDefault(); // Prevent scroll during drag
+
+    const x = e.touches[0].clientX;
+    const y = e.touches[0].clientY;
+
+    if (_touchGhost) {
+      _touchGhost.style.left = (x - 120) + 'px';
+      _touchGhost.style.top  = (y - 30) + 'px';
+    }
+
+    // Highlight the column we're over
+    document.querySelectorAll('.col-body.drag-over').forEach(el => el.classList.remove('drag-over'));
+    const el = document.elementFromPoint(x, y);
+    const colBody = el?.closest('.col-body');
+    if (colBody) colBody.classList.add('drag-over');
+
+  }, { passive: false });
+
+  board.addEventListener('touchend', e => {
+    if (!_touchDragging || !_touchId) {
+      _touchId = null; return;
+    }
+
+    const x = e.changedTouches[0].clientX;
+    const y = e.changedTouches[0].clientY;
+
+    // Clean up ghost first so elementFromPoint doesn't hit it
+    if (_touchGhost) { _touchGhost.remove(); _touchGhost = null; }
+    document.querySelectorAll('.card.dragging').forEach(el => el.classList.remove('dragging'));
+    document.querySelectorAll('.col-body.drag-over').forEach(el => el.classList.remove('drag-over'));
+
+    const el = document.elementFromPoint(x, y);
+    const colBody = el?.closest('.col-body');
+    if (colBody) {
+      const colId = colBody.id.replace('col-', '');
+      const item = items.find(i => i.id === _touchId);
+      if (item && item.status !== colId) {
+        const prevStatus = item.status;
+        item.status = colId;
+        render();
+        storage.saveItem(item, items).catch(err => {
+          item.status = prevStatus;
+          render();
+          showToast('Move failed: ' + err.message, 'error');
+        });
+        showToast(`✓ Moved to ${COLUMNS.find(c=>c.id===colId)?.label || colId}`);
+      }
+    }
+
+    _touchId = null;
+    _touchDragging = false;
+  });
+}
+
+function createTouchGhost(id) {
+  const item = items.find(i => i.id === id);
+  const ghost = document.createElement('div');
+  ghost.id = 'drag-ghost';
+  ghost.textContent = item?.title || '…';
+  return ghost;
+}
+
+// ─── DELETE ───────────────────────────────────────────────────────────────────
+let lastDeletedId = null;
+
+function deleteCard(e, id) {
+  e.stopPropagation();
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  const now = new Date().toISOString();
+  item.deleted_at = now;
+  item.updated_at = now;
+  lastDeletedId = id;
+  saveItem(item); // soft-delete the row in Supabase
+  render();
+  showToastUndo(`Deleted "${item.title.slice(0,40)}${item.title.length>40?'…':''}"`, () => undoDelete());
+}
+
+function undoDelete() {
+  if (lastDeletedId == null) return;
+  mutateItem(lastDeletedId, item => { item.deleted_at = null; });
+  lastDeletedId = null;
+  render();
+  showToast('✓ Restored');
+}
+
+// ─── EXPORT (CSV + JSON) ──────────────────────────────────────────────────────
+let exportTab = 'csv';
+
+function setExportTab(tab) {
+  exportTab = tab;
+  document.getElementById('export-tab-csv').style.cssText = `border:none;border-radius:0;border-bottom:2px solid ${tab==='csv'?'var(--accent)':'transparent'};color:${tab==='csv'?'var(--accent)':'var(--muted)'};background:none`;
+  document.getElementById('export-tab-json').style.cssText = `border:none;border-radius:0;border-bottom:2px solid ${tab==='json'?'var(--accent)':'transparent'};color:${tab==='json'?'var(--accent)':'var(--muted)'};background:none`;
+  document.getElementById('export-hint').textContent = tab === 'csv'
+    ? 'CSV — paste directly into Google Sheets, Excel, or Numbers.'
+    : 'JSON — full data including all fields. Best for backup.';
+  document.getElementById('export-box').textContent = tab === 'csv' ? itemsToCSV(items) : JSON.stringify({ items }, null, 2);
+  document.getElementById('copy-btn').textContent = tab === 'csv' ? 'Copy CSV' : 'Copy JSON';
+}
+
+function openExport() {
+  setExportTab('csv');
+  document.getElementById('export-modal').classList.add('open');
+}
+
+function copyExport() {
+  const text = document.getElementById('export-box').textContent;
+  const ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.cssText = 'position:fixed;top:-9999px;left:-9999px;opacity:0';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  let success = false;
+  try { success = document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  if (success) {
+    showToast(`✓ ${exportTab.toUpperCase()} copied!`);
+  } else {
+    const w = window.open('', '_blank');
+    w.document.write('<pre style="font-family:monospace;padding:20px">' + text.replace(/</g,'&lt;') + '</pre>');
+    showToast('Opened in new tab — Cmd+A then Cmd+C');
+  }
+}
+
+function downloadExport() {
+  const text = document.getElementById('export-box').textContent;
+  const ext = exportTab === 'csv' ? 'csv' : 'json';
+  const mime = exportTab === 'csv' ? 'text/csv' : 'application/json';
+  const stamp = new Date().toISOString().split('T')[0];
+  const blob = new Blob([text], { type: mime + ';charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `roadmap-${stamp}.${ext}`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast(`✓ Downloaded ${a.download}`);
+}
+
+// ─── UTILS ────────────────────────────────────────────────────────────────────
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) closeModal(o.id); });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal('submit-modal'); closeModal('detail-modal'); }
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+  if (e.key === '/') { e.preventDefault(); document.getElementById('kanban-search')?.focus(); }
+  if (e.key === 'n' || e.key === 'N') { openSubmitModal(); }
+  if (e.key === 'a' || e.key === 'A') { archiveDone(); }
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerHTML = escHtml(msg);
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Pending undo action — stored globally so the button can call it reliably
+let _pendingUndo = null;
+function _runPendingUndo() {
+  if (_pendingUndo) { _pendingUndo(); _pendingUndo = null; }
+  document.getElementById('toast').classList.remove('show');
+}
+
+function showToastUndo(msg, undoFn) {
+  _pendingUndo = undoFn;
+  const t = document.getElementById('toast');
+  t.innerHTML = `${escHtml(msg)} <button onclick="_runPendingUndo()" style="margin-left:10px;background:none;border:1px solid var(--accent);color:var(--accent);padding:2px 8px;border-radius:4px;font-family:'DM Mono',monospace;font-size:0.7rem;cursor:pointer">Undo</button>`;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.classList.remove('show'); _pendingUndo = null; }, 6000);
+}
+
+// ─── STORAGE WIRING ───────────────────────────────────────────────────────────
+// All real logic lives in data.js + the storage adapter. These thin wrappers
+// connect the adapter to this page's local state (items, nextId, etc).
+
+// ── PER-ITEM SAVE PATTERN ────────────────────────────────────────
+// With Supabase backend, every mutation goes through saveItem(item) which
+// upserts ONE row. We use optimistic UI: mutate locally first, then save
+// in the background. Errors show a toast but don't roll back.
+
+function saveItem(item) {
+  // Fire-and-forget; if it fails we toast but keep the optimistic state.
+  storage.saveItem(item, items).then(saved => {
+    // For inserts, the server assigns the id — patch it back into the local item
+    if (saved && saved.id && saved.id !== item.id) {
+      item.id = saved.id;
+    }
+  }).catch(err => {
+    console.error('saveItem failed', err);
+    showToast('Save failed: ' + (err.message || 'unknown error'), 'error');
+  });
+}
+
+// Bulk save — only used by migration code now. Most call sites should use saveItem.
+function saveToStorage() {
+  // No-op for Supabase (per-item saves handle persistence).
+  // Kept for backwards compat with code that calls it after array mutations.
+}
+
+// Mutation helper — stamps updated_at and persists ONE item.
+function mutateItem(id, mutator) {
+  const item = items.find(i => i.id === id);
+  if (!item) return null;
+  mutator(item);
+  item.updated_at = new Date().toISOString();
+  saveItem(item);
+  return item;
+}
+
+async function loadFromStorage() {
+  const state = await storage.loadAll();
+  items  = state.items || [];
+  // Note: we don't have a separate boards/team list in kanban — they come
+  // from the items themselves. SupabaseAdapter still loads them but we ignore.
+}
+
+// Process recurring items on load. Returns count spawned.
+async function processRecurring() {
+  let spawned = 0;
+  const newItems = [];
+  for (const item of items) {
+    if (item.deleted_at) continue;
+    if (shouldRecurToday(item)) {
+      // Use a placeholder id; server will assign real one
+      const copy = spawnRecurrence(item, () => -1 * (Date.now() + spawned));
+      if (copy) {
+        copy.id = null; // let server assign
+        newItems.push(copy);
+        spawned++;
+      }
+    }
+  }
+  if (spawned > 0) {
+    // Save spawned items individually + update the templates' last_recurred_at
+    for (const it of newItems) {
+      try {
+        const saved = await storage.saveItem(it, items);
+        if (saved) it.id = saved.id;
+      } catch (e) { console.error('Spawn failed', e); }
+    }
+    // Persist the template's last_recurred_at flag
+    for (const t of items) {
+      if (t.last_recurred_at === new Date().toISOString().split('T')[0]) {
+        await storage.saveItem(t, items).catch(() => {});
+      }
+    }
+    items = [...newItems, ...items];
+  }
+  return spawned;
+}
+
+// ── REALTIME SUBSCRIPTION ─────────────────────────────────────
+// When another tab/user changes an item, refresh our local copy and re-render.
+let _suppressRealtime = false;
+storage.subscribe(({ table, payload }) => {
+  if (_suppressRealtime) return;
+  if (table === 'items' && payload) {
+    // Refetch all items — simpler than diff merging for small datasets
+    loadFromStorage().then(() => render());
+  }
+});
+
+// ─── THEME ────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') !== 'light';
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+}
+
+// Restore saved theme
+(function() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = '☀️';
+    });
+  }
+})();
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+// initApp is called by onAuthStateChange once a valid session exists.
+// It is NOT called at page load — the auth lock screen shows first.
+async function initApp() {
+  if (_appInitialized) return;
+  _appInitialized = true;
+
+  try {
+    await loadFromStorage();
+  } catch (e) {
+    console.error('loadFromStorage failed:', e);
+    showToast('Failed to load data: ' + e.message, 'error');
+    return;
+  }
+
+  const spawned = await processRecurring();
+  loadFilterState();
+  document.getElementById('kanban-search').value = filterState.search || '';
+  document.getElementById('board').setAttribute('data-print-date', new Date().toLocaleDateString());
+  renderFilterBar();
+  render();
+  if (spawned > 0) showToast(`✓ ${spawned} recurring item${spawned!==1?'s':''} added to backlog`);
+
+  // Show migration button if localStorage has data and Supabase is empty
+  const localData = localStorage.getItem('backlog_items');
+  if (localData && items.length === 0) {
+    showMigrationPrompt();
+  }
+}
+
+// ─── MIGRATION FROM LOCALSTORAGE ──────────────────────────────────────────────
+function showMigrationPrompt() {
+  const saved = JSON.parse(localStorage.getItem('backlog_items') || '[]');
+  if (!saved.length) return;
+  const banner = document.createElement('div');
+  banner.id = 'migration-banner';
+  banner.style.cssText = `
+    position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+    background:var(--surface);border:1px solid var(--accent);border-radius:10px;
+    padding:14px 20px;z-index:400;display:flex;align-items:center;gap:12px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.4);font-size:0.75rem;
+    max-width:calc(100vw - 32px);
+  `;
+  banner.innerHTML = `
+    <span>📦 Found <strong>${saved.length}</strong> item${saved.length!==1?'s':''} in localStorage — migrate to Supabase?</span>
+    <button onclick="migrateFromLocalStorage()" style="background:var(--accent);color:#0e0e10;border:none;border-radius:6px;padding:6px 14px;font-family:'DM Mono',monospace;font-size:0.72rem;font-weight:700;cursor:pointer;white-space:nowrap">Migrate</button>
+    <button onclick="this.closest('#migration-banner').remove()" style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:0.9rem;padding:2px 6px">✕</button>
+  `;
+  document.body.appendChild(banner);
+}
+
+async function migrateFromLocalStorage() {
+  const banner = document.getElementById('migration-banner');
+  if (banner) banner.innerHTML = `<span>Migrating… please wait</span>`;
+
+  try {
+    const savedItems  = JSON.parse(localStorage.getItem('backlog_items')  || '[]');
+    const savedBoards = JSON.parse(localStorage.getItem('backlog_boards') || '[]');
+    const savedTeam   = JSON.parse(localStorage.getItem('backlog_team')   || '[]');
+
+    await storage.save({ items: savedItems, boards: savedBoards, team: savedTeam });
+
+    // Reload from Supabase so IDs are the server-assigned ones
+    await loadFromStorage();
+    render();
+
+    if (banner) banner.remove();
+    showToast(`✓ Migrated ${savedItems.length} items to Supabase`);
+
+    // Optional: clear localStorage to avoid confusion on next load
+    // Uncomment once you've confirmed the migration looks correct in Supabase:
+    // localStorage.removeItem('backlog_items');
+    // localStorage.removeItem('backlog_boards');
+    // localStorage.removeItem('backlog_team');
+  } catch (e) {
+    console.error('Migration failed:', e);
+    if (banner) banner.remove();
+    showToast('Migration failed: ' + e.message, 'error');
+  }
+}
+
+// Check for an existing session on page load (handles page refresh when already signed in)
+supabaseClient.auth.getSession().then(({ data: { session } }) => {
+  if (session?.user?.email) {
+    setCurrentUser(session.user.email);
+    document.getElementById('auth-lock-screen').style.display = 'none';
+    initApp();
+  }
+});
+
+</script>
+</body>
+</html>
