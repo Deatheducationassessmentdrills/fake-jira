@@ -1055,6 +1055,60 @@ function moveCard(id, newStatus) {
   if (item) { item.status = newStatus; render(); closeModal('detail-modal'); showToast('✓ Moved'); }
 }
 
+function updateReporter(id, val) {
+  const item = items.find(i => i.id === id);
+  if (item) { item.reporter = val; render(); }
+}
+
+let activeDetailAssigneePicker = null;
+
+function showDetailAssigneePicker(btn, id) {
+  if (activeDetailAssigneePicker) { activeDetailAssigneePicker.remove(); activeDetailAssigneePicker = null; }
+  const item = items.find(i => i.id === id);
+  const available = TEAM.filter(n => !(item.assignees||[]).includes(n));
+  if (!available.length) return;
+  const picker = document.createElement('div');
+  picker.className = 'assignee-picker';
+  picker.innerHTML = available.map(n =>
+    `<div class="assignee-picker-item" onclick="addAssigneeDetail(${id},'${n}')">${n}</div>`
+  ).join('');
+  const rect = btn.getBoundingClientRect();
+  picker.style.top  = (rect.bottom + 4) + 'px';
+  picker.style.left = rect.left + 'px';
+  document.body.appendChild(picker);
+  activeDetailAssigneePicker = picker;
+  setTimeout(() => document.addEventListener('click', () => {
+    if (activeDetailAssigneePicker) { activeDetailAssigneePicker.remove(); activeDetailAssigneePicker = null; }
+  }, { once: true }), 10);
+}
+
+function addAssigneeDetail(id, name) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  if (!item.assignees) item.assignees = [];
+  if (!item.assignees.includes(name)) {
+    item.assignees.push(name);
+    render();
+    const wrap = document.getElementById(`detail-assignees-${id}`);
+    if (wrap) {
+      wrap.innerHTML = (item.assignees||[]).map(n => `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssigneeDetail(${id},'${n}')">×</span></span>`).join('')
+        + `<button class="tag-add-btn" onclick="showDetailAssigneePicker(this,${id})">+ assign</button>`;
+    }
+  }
+}
+
+function removeAssigneeDetail(id, name) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  item.assignees = (item.assignees||[]).filter(n => n !== name);
+  render();
+  const wrap = document.getElementById(`detail-assignees-${id}`);
+  if (wrap) {
+    wrap.innerHTML = (item.assignees||[]).map(n => `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssigneeDetail(${id},'${n}')">×</span></span>`).join('')
+      + `<button class="tag-add-btn" onclick="showDetailAssigneePicker(this,${id})">+ assign</button>`;
+  }
+}
+
 // ─── DELETE ───────────────────────────────────────────────────────────────────
 function deleteCard(e, id) {
   e.stopPropagation();
