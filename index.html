@@ -771,6 +771,147 @@
   }
 
   .tag-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ── DETAIL PANEL ────────────────────────────────────────── */
+  .detail-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 150;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .detail-overlay.open {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .detail-panel {
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 420px;
+    height: 100vh;
+    background: var(--surface);
+    border-left: 1px solid var(--border);
+    z-index: 160;
+    display: flex;
+    flex-direction: column;
+    transition: right 0.25s cubic-bezier(0.4,0,0.2,1);
+    overflow: hidden;
+  }
+
+  .detail-panel.open { right: 0; }
+
+  .detail-panel-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .detail-panel-title-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 4px 6px;
+    font-family: 'Syne', sans-serif;
+    font-size: 1.17rem;
+    font-weight: 700;
+    color: var(--text);
+    outline: none;
+    width: 100%;
+    resize: none;
+    line-height: 1.4;
+    transition: background 0.15s;
+  }
+
+  .detail-panel-title-input:hover { background: var(--surface2); }
+  .detail-panel-title-input:focus { background: var(--surface2); box-shadow: 0 0 0 1px var(--accent); border-radius: 6px; }
+
+  .detail-panel-close {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1.17rem;
+    padding: 4px 6px;
+    border-radius: 4px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: all 0.15s;
+  }
+
+  .detail-panel-close:hover { background: var(--surface2); color: var(--text); }
+
+  .detail-panel-body {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .detail-field { display: flex; flex-direction: column; gap: 5px; }
+
+  .detail-field-label {
+    font-size: 0.96rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+
+  .detail-field-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 11px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.96rem;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s;
+    cursor: pointer;
+  }
+
+  .detail-field-select:focus { border-color: var(--accent); }
+  .detail-field-select option { background: var(--surface2); }
+
+  .detail-field-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 9px 11px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.96rem;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    min-height: 90px;
+    transition: border-color 0.15s;
+    line-height: 1.55;
+  }
+
+  .detail-field-textarea:focus { border-color: var(--accent); }
+
+  .detail-field-date {
+    font-size: 0.96rem;
+    color: var(--muted2);
+    padding: 4px 0;
+  }
+
+  @media (max-width: 768px) {
+    .detail-panel { width: 100%; right: -100%; }
+  }
 </style>
 </head>
 <body>
@@ -863,14 +1004,15 @@
   </div>
 </div>
 
-<!-- CARD DETAIL MODAL -->
-<div class="modal-overlay" id="detail-modal">
-  <div class="modal">
-    <div class="modal-title" id="detail-title"></div>
-    <div style="margin-bottom:20px;" id="detail-body"></div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeModal('detail-modal')">Close</button>
-    </div>
+<!-- CARD DETAIL PANEL -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-panel-header">
+    <textarea class="detail-panel-title-input" id="detail-panel-title" rows="2" onchange="saveDetailTitle()"></textarea>
+    <button class="detail-panel-close" onclick="closeDetail()" title="Close">✕</button>
+  </div>
+  <div class="detail-panel-body" id="detail-panel-body">
+    <!-- populated by openDetail() -->
   </div>
 </div>
 
@@ -1012,52 +1154,91 @@ function syncFormspree() {
   document.getElementById('fs-name').value  = document.getElementById('idea-name').value;
 }
 
-// ─── DETAIL MODAL ─────────────────────────────────────────────────────────────
+// ─── DETAIL PANEL ─────────────────────────────────────────────────────────────
+const TAGS = ['Feature', 'Bug', 'Setup', 'Design', 'Research', 'Idea', 'Content'];
+let _detailOpenId = null;
+
 function openDetail(id) {
   const item = items.find(i => i.id === id);
   if (!item) return;
+  _detailOpenId = id;
 
-  document.getElementById('detail-title').textContent = item.title;
-  document.getElementById('detail-body').innerHTML = `
-    <div class="card-detail-field">
-      <div class="card-detail-label">Description</div>
-      <div class="card-detail-value">${item.desc ? escHtml(item.desc) : '<span style="color:var(--muted)">No description</span>'}</div>
+  const titleEl = document.getElementById('detail-panel-title');
+  titleEl.value = item.title;
+
+  const d = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '';
+
+  document.getElementById('detail-panel-body').innerHTML = `
+    <div class="detail-field">
+      <div class="detail-field-label">Status</div>
+      <select class="detail-field-select" onchange="updateDetailField(${id},'status',this.value)">
+        ${COLUMNS.map(c => `<option value="${c.id}" ${item.status===c.id?'selected':''}>${c.label}</option>`).join('')}
+      </select>
     </div>
-    <div class="card-detail-field">
-      <div class="card-detail-label">Reporter</div>
-      <select class="detail-reporter-select" onchange="updateReporter(${id}, this.value)">
+    <div class="detail-field">
+      <div class="detail-field-label">Reporter</div>
+      <select class="detail-field-select" onchange="updateDetailField(${id},'reporter',this.value)">
         <option value="">—</option>
         ${TEAM.map(n => `<option ${item.reporter===n?'selected':''}>${n}</option>`).join('')}
       </select>
     </div>
-    <div class="card-detail-field">
-      <div class="card-detail-label">Assignees</div>
+    <div class="detail-field">
+      <div class="detail-field-label">Assignees</div>
       <div class="detail-assignees-wrap" id="detail-assignees-${id}">
-        ${(item.assignees||[]).map(n => `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssigneeDetail(${id},'${n}')">×</span></span>`).join('')}
-        <button class="tag-add-btn" onclick="showDetailAssigneePicker(this, ${id})">+ assign</button>
+        ${renderAssigneePills(item, id)}
       </div>
     </div>
-    <div class="card-detail-field">
-      <div class="card-detail-label">Move to</div>
-      <div class="status-select-row">
-        ${COLUMNS.map(c => `
-          <button class="status-pill tag-${c.id} ${c.id === item.status ? 'active' : ''}"
-            onclick="moveCard(${id}, '${c.id}')">${c.label}</button>
-        `).join('')}
-      </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Tag</div>
+      <select class="detail-field-select" onchange="updateDetailField(${id},'tag',this.value)">
+        <option value="">—</option>
+        ${TAGS.map(t => `<option ${item.tag===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Date</div>
+      <div class="detail-field-date">${d || '—'}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Description</div>
+      <textarea class="detail-field-textarea" onchange="updateDetailField(${id},'desc',this.value)" placeholder="No description...">${escHtml(item.desc||'')}</textarea>
     </div>
   `;
-  openModal('detail-modal');
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function renderAssigneePills(item, id) {
+  return (item.assignees||[]).map(n =>
+    `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssigneeDetail(${id},'${n}')">×</span></span>`
+  ).join('') + `<button class="tag-add-btn" onclick="showDetailAssigneePicker(this,${id})">+ assign</button>`;
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('detail-overlay').classList.remove('open');
+  _detailOpenId = null;
+}
+
+function saveDetailTitle() {
+  if (_detailOpenId === null) return;
+  const item = items.find(i => i.id === _detailOpenId);
+  if (!item) return;
+  const val = document.getElementById('detail-panel-title').value.trim();
+  if (val) { item.title = val; render(); }
+}
+
+function updateDetailField(id, field, val) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  item[field] = val;
+  render();
 }
 
 function moveCard(id, newStatus) {
   const item = items.find(i => i.id === id);
-  if (item) { item.status = newStatus; render(); closeModal('detail-modal'); showToast('✓ Moved'); }
-}
-
-function updateReporter(id, val) {
-  const item = items.find(i => i.id === id);
-  if (item) { item.reporter = val; render(); }
+  if (item) { item.status = newStatus; render(); closeDetail(); showToast('✓ Moved'); }
 }
 
 let activeDetailAssigneePicker = null;
@@ -1090,10 +1271,7 @@ function addAssigneeDetail(id, name) {
     item.assignees.push(name);
     render();
     const wrap = document.getElementById(`detail-assignees-${id}`);
-    if (wrap) {
-      wrap.innerHTML = (item.assignees||[]).map(n => `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssigneeDetail(${id},'${n}')">×</span></span>`).join('')
-        + `<button class="tag-add-btn" onclick="showDetailAssigneePicker(this,${id})">+ assign</button>`;
-    }
+    if (wrap) wrap.innerHTML = renderAssigneePills(item, id);
   }
 }
 
@@ -1103,10 +1281,7 @@ function removeAssigneeDetail(id, name) {
   item.assignees = (item.assignees||[]).filter(n => n !== name);
   render();
   const wrap = document.getElementById(`detail-assignees-${id}`);
-  if (wrap) {
-    wrap.innerHTML = (item.assignees||[]).map(n => `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssigneeDetail(${id},'${n}')">×</span></span>`).join('')
-      + `<button class="tag-add-btn" onclick="showDetailAssigneePicker(this,${id})">+ assign</button>`;
-  }
+  if (wrap) wrap.innerHTML = renderAssigneePills(item, id);
 }
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
@@ -1126,7 +1301,7 @@ document.querySelectorAll('.modal-overlay').forEach(o => {
 });
 
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeModal('submit-modal'); closeModal('detail-modal'); }
+  if (e.key === 'Escape') { closeModal('submit-modal'); closeDetail(); }
 });
 
 function showToast(msg) {
