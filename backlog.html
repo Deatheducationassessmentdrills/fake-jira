@@ -887,6 +887,7 @@ tbody tr:hover .row-actions { opacity: 1; }
 
   table { min-width: 500px; font-size: 0.96rem; }
 
+  th:nth-child(7), td:nth-child(7),
   th:nth-child(6), td:nth-child(6),
   th:nth-child(5), td:nth-child(5) { display: none; }
 
@@ -906,6 +907,72 @@ tbody tr:hover .row-actions { opacity: 1; }
 @media (max-width: 480px) {
   th:nth-child(4), td:nth-child(4) { display: none; }
 }
+
+.reporter-select {
+  background: none;
+  border: none;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.96rem;
+  cursor: pointer;
+  outline: none;
+  color: var(--text);
+  -webkit-appearance: none;
+  appearance: none;
+  max-width: 100px;
+}
+
+.assignees-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+  min-width: 140px;
+}
+
+.assignee-pill {
+  font-size: 0.96rem;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--muted2);
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.assignee-pill .pill-remove {
+  opacity: 0.4;
+  cursor: pointer;
+  font-size: 0.96rem;
+}
+
+.assignee-pill .pill-remove:hover { opacity: 1; color: #ff4d6d; }
+
+.assignee-picker {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 8px;
+  z-index: 300;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: 160px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.assignee-picker-item {
+  padding: 6px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.96rem;
+  transition: background 0.1s;
+}
+
+.assignee-picker-item:hover { background: var(--surface2); }
 </style>
 </head>
 <body>
@@ -955,6 +1022,14 @@ tbody tr:hover .row-actions { opacity: 1; }
     </select>
     <select class="sidebar-filter-select" id="filter-board" onchange="filterRows()">
       <option value="">All boards</option>
+    </select>
+    <select class="sidebar-filter-select" id="filter-reporter" onchange="filterRows()">
+      <option value="">All reporters</option>
+      <option>Brandon</option>
+      <option>Jaivin</option>
+      <option>Dave</option>
+      <option>Kate</option>
+      <option>Darien</option>
     </select>
   </div>
 
@@ -1009,6 +1084,8 @@ tbody tr:hover .row-actions { opacity: 1; }
           <th onclick="sortBy('status')" style="width:130px">Status <span class="sort-arrow">↕</span></th>
           <th style="width:190px">Tags</th>
           <th style="width:175px">Boards</th>
+          <th style="width:110px">Reporter</th>
+          <th style="width:170px">Assignees</th>
           <th onclick="sortBy('priority')" style="width:95px">Priority <span class="sort-arrow">↕</span></th>
           <th onclick="sortBy('date')" style="width:100px">Added <span class="sort-arrow">↕</span></th>
           <th style="width:60px"></th>
@@ -1036,14 +1113,14 @@ tbody tr:hover .row-actions { opacity: 1; }
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
 let items = [
-  { id: 1,  title: 'Set up GitHub repo & enable GitHub Pages',         status: 'progress', tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '' },
-  { id: 2,  title: 'Replace Formspree endpoint with real form ID',     status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '' },
-  { id: 3,  title: 'Update GitHub Issues URL in config',               status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '' },
-  { id: 4,  title: 'Wire up Supabase for live data (pending CSO approval)', status: 'blocked', tags: ['Feature'],    boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '' },
-  { id: 5,  title: 'Add multi-board support with cross-tagging',       status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '' },
-  { id: 6,  title: 'Add SMS idea submission via Twilio',               status: 'ideas',    tags: ['Feature', 'Idea'], boards: [],                                         priority: 'Low',    date: '2025-04-24', notes: '' },
-  { id: 7,  title: 'Swap password gate for Supabase Auth',             status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '' },
-  { id: 8,  title: 'Link tokens.css to index.html and token-editor.html', status: 'backlog', tags: ['Setup','Design'], boards: ['Fake JIRA to-do list','Design System'], priority: 'Medium', date: '2025-04-24', notes: '' },
+  { id: 1,  title: 'Set up GitHub repo & enable GitHub Pages',         status: 'progress', tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 2,  title: 'Replace Formspree endpoint with real form ID',     status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 3,  title: 'Update GitHub Issues URL in config',               status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 4,  title: 'Wire up Supabase for live data (pending CSO approval)', status: 'blocked', tags: ['Feature'],    boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 5,  title: 'Add multi-board support with cross-tagging',       status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 6,  title: 'Add SMS idea submission via Twilio',               status: 'ideas',    tags: ['Feature', 'Idea'], boards: [],                                         priority: 'Low',    date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 7,  title: 'Swap password gate for Supabase Auth',             status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 8,  title: 'Link tokens.css to index.html and token-editor.html', status: 'backlog', tags: ['Setup','Design'], boards: ['Fake JIRA to-do list','Design System'], priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [] },
 ];
 
 let nextId = 100;
@@ -1054,6 +1131,7 @@ const ALL_TAGS     = ['Feature', 'Bug', 'Setup', 'Design', 'Research', 'Idea', '
 const STATUSES     = ['ideas', 'backlog', 'progress', 'blocked', 'done'];
 const STATUS_LABELS = { ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress', blocked: 'Blocked', done: 'Done' };
 const PRIORITIES   = ['High', 'Medium', 'Low'];
+const TEAM = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
 let boards = ['Fake JIRA to-do list', 'Design System', 'DEAD 5.0 Wishlist', 'DEAD Admin Wishlist'];
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
@@ -1088,6 +1166,13 @@ function render() {
     });
   });
 
+  document.querySelectorAll('.assignee-add-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      showAssigneePicker(btn, parseInt(btn.dataset.id));
+    });
+  });
+
   refreshBoardFilter();
   updateStats();
   updateCount();
@@ -1106,7 +1191,7 @@ function rowHTML(item, idx) {
 
   const priColor = item.priority === 'High' ? '#ff6b85' : item.priority === 'Medium' ? '#f5a623' : 'var(--muted)';
 
-  return `<tr data-id="${item.id}" data-status="${item.status}" data-tags="${item.tags.join(',')}" data-boards="${itemBoards.join(',')}">
+  return `<tr data-id="${item.id}" data-status="${item.status}" data-tags="${item.tags.join(',')}" data-boards="${itemBoards.join(',')}" data-reporter="${item.reporter}">
     <td style="color:var(--muted);font-size: 0.96rem">${idx}</td>
     <td><input class="cell-edit" value="${escHtml(item.title)}" placeholder="Item title..."
       onchange="updateField(${item.id},'title',this.value)"
@@ -1126,6 +1211,18 @@ function rowHTML(item, idx) {
       <div class="boards-cell">
         ${boardsHTML}
         <button class="board-add-btn tag-add-btn" data-id="${item.id}">+ board</button>
+      </div>
+    </td>
+    <td>
+      <select class="reporter-select" onchange="updateField(${item.id},'reporter',this.value)">
+        <option value="">—</option>
+        ${TEAM.map(n => `<option ${item.reporter===n?'selected':''}>${n}</option>`).join('')}
+      </select>
+    </td>
+    <td>
+      <div class="assignees-cell" id="assignees-${item.id}">
+        ${(item.assignees||[]).map(n => `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssignee(${item.id},'${escHtml(n)}')">×</span></span>`).join('')}
+        <button class="tag-add-btn assignee-add-btn" data-id="${item.id}">+ assign</button>
       </div>
     </td>
     <td class="priority-cell">
@@ -1227,6 +1324,42 @@ function showBoardPicker(btn, id) {
 
 function closeBoardPicker() {
   if (activeBoardPicker) { activeBoardPicker.remove(); activeBoardPicker = null; }
+}
+
+let activeAssigneePicker = null;
+
+function showAssigneePicker(btn, id) {
+  closeTagPicker(); closeBoardPicker(); closeAssigneePicker();
+  const item = items.find(i => i.id === id);
+  const available = TEAM.filter(n => !(item.assignees||[]).includes(n));
+  if (!available.length) return;
+  const picker = document.createElement('div');
+  picker.className = 'assignee-picker';
+  picker.innerHTML = available.map(n =>
+    `<div class="assignee-picker-item" onclick="addAssignee(${id},'${n}')">${n}</div>`
+  ).join('');
+  const rect = btn.getBoundingClientRect();
+  picker.style.top  = (rect.bottom + 4) + 'px';
+  picker.style.left = rect.left + 'px';
+  document.body.appendChild(picker);
+  activeAssigneePicker = picker;
+  setTimeout(() => document.addEventListener('click', closeAssigneePicker, { once: true }), 10);
+}
+
+function closeAssigneePicker() {
+  if (activeAssigneePicker) { activeAssigneePicker.remove(); activeAssigneePicker = null; }
+}
+
+function addAssignee(id, name) {
+  const item = items.find(i => i.id === id);
+  if (!item) return;
+  if (!item.assignees) item.assignees = [];
+  if (!item.assignees.includes(name)) { item.assignees.push(name); render(); saveToStorage(); }
+}
+
+function removeAssignee(id, name) {
+  const item = items.find(i => i.id === id);
+  if (item) { item.assignees = (item.assignees||[]).filter(n => n !== name); render(); saveToStorage(); }
 }
 
 function toggleBoard(id, board) {
@@ -1372,6 +1505,7 @@ function filterRows() {
   const st = document.getElementById('filter-status').value;
   const tg = document.getElementById('filter-tag').value;
   const bd = document.getElementById('filter-board').value;
+  const rp = document.getElementById('filter-reporter').value;
 
   document.querySelectorAll('#table-body tr[data-id]').forEach(row => {
     const title     = row.querySelector('.cell-edit')?.value.toLowerCase() ?? '';
@@ -1383,8 +1517,9 @@ function filterRows() {
     const matchSt = !st || status === st;
     const matchTg = !tg || tags.split(',').includes(tg);
     const matchBd = !bd || rowBoards.split(',').includes(bd);
+    const matchRp = !rp || (row.dataset.reporter === rp);
 
-    row.classList.toggle('filtered-out', !(matchQ && matchSt && matchTg && matchBd));
+    row.classList.toggle('filtered-out', !(matchQ && matchSt && matchTg && matchBd && matchRp));
   });
 }
 
