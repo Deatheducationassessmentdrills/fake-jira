@@ -465,6 +465,7 @@ header {
 }
 
 .theme-toggle:hover { border-color: var(--border2); }
+.sign-out-mobile { display: none; }
 
 /* ── MAIN / TABLE ────────────────────────────────────────── */
 main {
@@ -543,6 +544,13 @@ td {
 }
 
 .cell-edit::placeholder { color: var(--muted); -webkit-text-fill-color: var(--muted); }
+
+.date-cell {
+  width: 105px;
+  padding: 4px 6px;
+  font-size: 0.75rem;
+  color-scheme: dark;
+}
 
 /* ── STATUS BADGE ────────────────────────────────────────── */
 .status-cell select {
@@ -879,6 +887,7 @@ tbody tr:hover .row-actions { opacity: 1; }
 
   .sidebar-stats  { display: none; }
   .sidebar-bottom { display: none; }
+  .sign-out-mobile { display: inline-flex !important; }
 
   header { padding: 0 16px; }
 
@@ -887,9 +896,11 @@ tbody tr:hover .row-actions { opacity: 1; }
 
   table { min-width: 500px; font-size: 0.96rem; }
 
-  th:nth-child(7), td:nth-child(7),
+  th:nth-child(5), td:nth-child(5),
   th:nth-child(6), td:nth-child(6),
-  th:nth-child(5), td:nth-child(5) { display: none; }
+  th:nth-child(7), td:nth-child(7),
+  th:nth-child(9), td:nth-child(9),
+  th:nth-child(10), td:nth-child(10) { display: none; }
 
   td, th { padding: 8px 8px; }
 
@@ -996,6 +1007,9 @@ tbody tr:hover .row-actions { opacity: 1; }
     <a class="nav-link active" href="backlog.html">
       <span class="nav-link-icon">☰</span> Backlog
     </a>
+    <a class="nav-link" href="timeline.html">
+      <span class="nav-link-icon">◫</span> Timeline
+    </a>
   </nav>
 
   <!-- FILTERS moved into sidebar -->
@@ -1076,6 +1090,7 @@ tbody tr:hover .row-actions { opacity: 1; }
     <button class="btn" onclick="openExport()">Export JSON</button>
     <button class="btn btn-accent" onclick="addRow()">+ Add Item</button>
     <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn">🌙</button>
+    <button class="theme-toggle sign-out-mobile" onclick="signOut()" title="Sign out">⏻</button>
   </div>
 </header>
 
@@ -1093,6 +1108,8 @@ tbody tr:hover .row-actions { opacity: 1; }
           <th style="width:110px">Reporter</th>
           <th style="width:170px">Assignees</th>
           <th onclick="sortBy('priority')" style="width:95px">Priority <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('start_date')" style="width:110px">Start <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('end_date')" style="width:110px">End <span class="sort-arrow">↕</span></th>
           <th onclick="sortBy('date')" style="width:100px">Added <span class="sort-arrow">↕</span></th>
           <th style="width:60px"></th>
         </tr>
@@ -1119,14 +1136,14 @@ tbody tr:hover .row-actions { opacity: 1; }
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
 let items = [
-  { id: 1,  title: 'Set up GitHub repo & enable GitHub Pages',         status: 'progress', tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
-  { id: 2,  title: 'Replace Formspree endpoint with real form ID',     status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [] },
-  { id: 3,  title: 'Update GitHub Issues URL in config',               status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [] },
-  { id: 4,  title: 'Wire up Supabase for live data (pending CSO approval)', status: 'blocked', tags: ['Feature'],    boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
-  { id: 5,  title: 'Add multi-board support with cross-tagging',       status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
-  { id: 6,  title: 'Add SMS idea submission via Twilio',               status: 'ideas',    tags: ['Feature', 'Idea'], boards: [],                                         priority: 'Low',    date: '2025-04-24', notes: '', reporter: '', assignees: [] },
-  { id: 7,  title: 'Swap password gate for Supabase Auth',             status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [] },
-  { id: 8,  title: 'Link tokens.css to index.html and token-editor.html', status: 'backlog', tags: ['Setup','Design'], boards: ['Fake JIRA to-do list','Design System'], priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [] },
+  { id: 1,  title: 'Set up GitHub repo & enable GitHub Pages',         status: 'progress', tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 2,  title: 'Replace Formspree endpoint with real form ID',     status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 3,  title: 'Update GitHub Issues URL in config',               status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 4,  title: 'Wire up Supabase for live data (pending CSO approval)', status: 'blocked', tags: ['Feature'],    boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 5,  title: 'Add multi-board support with cross-tagging',       status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 6,  title: 'Add SMS idea submission via Twilio',               status: 'ideas',    tags: ['Feature', 'Idea'], boards: [],                                         priority: 'Low',    date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 7,  title: 'Swap password gate for Supabase Auth',             status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 8,  title: 'Link tokens.css to index.html and token-editor.html', status: 'backlog', tags: ['Setup','Design'], boards: ['Fake JIRA to-do list','Design System'], priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
 ];
 
 let nextId = 100;
@@ -1153,7 +1170,7 @@ function render() {
   });
 
   if (sorted.length === 0) {
-    tbody.innerHTML = `<tr class="empty-row"><td colspan="8">No items yet — hit + Add Item to start</td></tr>`;
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="10">No items yet — hit + Add Item to start</td></tr>`;
   } else {
     tbody.innerHTML = sorted.map((item, i) => rowHTML(item, i + 1)).join('');
   }
@@ -1236,6 +1253,12 @@ function rowHTML(item, idx) {
         ${PRIORITIES.map(p => `<option ${item.priority===p?'selected':''}>${p}</option>`).join('')}
       </select>
     </td>
+    <td><input type="date" class="cell-edit date-cell" value="${item.start_date || ''}"
+      onchange="updateField(${item.id},'start_date',this.value)"
+      title="Start date"></td>
+    <td><input type="date" class="cell-edit date-cell" value="${item.end_date || ''}"
+      onchange="updateField(${item.id},'end_date',this.value)"
+      title="End date"></td>
     <td style="color:var(--muted);font-size: 0.96rem">${item.date}</td>
     <td>
       <div class="row-actions">
@@ -1571,7 +1594,7 @@ function loadFromStorage() {
     const savedItems  = localStorage.getItem('backlog_items');
     const savedBoards = localStorage.getItem('backlog_boards');
     const savedNextId = localStorage.getItem('backlog_nextId');
-    if (savedItems)  items  = JSON.parse(savedItems);
+    if (savedItems)  items  = JSON.parse(savedItems).map(i => ({ start_date: '', end_date: '', ...i }));
     if (savedBoards) boards = JSON.parse(savedBoards);
     if (savedNextId) nextId = parseInt(savedNextId);
   } catch(e) { console.warn('Storage load failed', e); }
