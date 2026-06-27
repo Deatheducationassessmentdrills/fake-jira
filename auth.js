@@ -18,8 +18,11 @@
     const session = result.data.session;
 
     if (onLoginPage) {
-      // Already logged in — send to the app
-      if (session) location.replace('index.html');
+      // Already logged in — send to the app, unless this is a password-reset
+      // callback (type=recovery in the hash). In that case stay on the page so
+      // the recovery handler below can show the set-password form.
+      const isRecovery = location.hash.includes('type=recovery');
+      if (session && !isRecovery) location.replace('index.html');
     } else if (!session) {
       // Not logged in — remember where they were headed, then send to login
       sessionStorage.setItem('auth_redirect', location.href);
