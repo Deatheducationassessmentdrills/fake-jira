@@ -130,7 +130,8 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
 </head>
 <body>
 
-<div class="card">
+<!-- Sign-in form -->
+<div class="card" id="signin-card">
   <div class="logo"><span class="logo-dot"></span>Fake JIRA</div>
   <h1>Sign in</h1>
   <p class="sub">Team access only</p>
@@ -145,6 +146,24 @@ button:disabled { opacity: 0.5; cursor: not-allowed; }
   </div>
   <div class="error-msg" id="error-msg"></div>
   <button id="btn" onclick="signIn()">Sign in</button>
+</div>
+
+<!-- Set new password form (shown when arriving via reset link) -->
+<div class="card" id="reset-card" style="display:none">
+  <div class="logo"><span class="logo-dot"></span>Fake JIRA</div>
+  <h1>Set new password</h1>
+  <p class="sub">Choose a password for your account</p>
+
+  <div class="field">
+    <label>New password</label>
+    <input type="password" id="new-password" autocomplete="new-password" placeholder="••••••••">
+  </div>
+  <div class="field">
+    <label>Confirm password</label>
+    <input type="password" id="confirm-password" autocomplete="new-password" placeholder="••••••••">
+  </div>
+  <div class="error-msg" id="reset-error-msg"></div>
+  <button id="reset-btn" onclick="setNewPassword()">Set password</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
@@ -176,10 +195,50 @@ async function signIn() {
   }
 }
 
-// Allow Enter key on either field
+// Allow Enter key on sign-in fields
 document.addEventListener('keydown', e => {
-  if (e.key === 'Enter') signIn();
+  if (e.key === 'Enter') {
+    if (document.getElementById('reset-card').style.display !== 'none') {
+      setNewPassword();
+    } else {
+      signIn();
+    }
+  }
 });
+
+// Detect password-recovery flow and swap to set-password form
+window._supabase.auth.onAuthStateChange(function (event) {
+  if (event === 'PASSWORD_RECOVERY') {
+    document.getElementById('signin-card').style.display = 'none';
+    document.getElementById('reset-card').style.display  = '';
+    setTimeout(() => document.getElementById('new-password').focus(), 100);
+  }
+});
+
+async function setNewPassword() {
+  const pw1 = document.getElementById('new-password').value;
+  const pw2 = document.getElementById('confirm-password').value;
+  const btn  = document.getElementById('reset-btn');
+  const err  = document.getElementById('reset-error-msg');
+
+  err.textContent = '';
+
+  if (pw1.length < 6) { err.textContent = 'Password must be at least 6 characters.'; return; }
+  if (pw1 !== pw2)    { err.textContent = 'Passwords do not match.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'Saving…';
+
+  const { error } = await window._supabase.auth.updateUser({ password: pw1 });
+
+  if (error) {
+    err.textContent = error.message;
+    btn.disabled = false;
+    btn.textContent = 'Set password';
+  } else {
+    location.replace('index.html');
+  }
+}
 </script>
 </body>
 </html>
