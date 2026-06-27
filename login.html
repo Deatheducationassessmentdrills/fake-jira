@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — Fake JIRA</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:      #111109;
+  --surface: #1a1a17;
+  --border:  #363630;
+  --text:    #f0f0ea;
+  --muted:   #7a7a70;
+  --accent:  #c8f135;
+  --danger:  #ff4d6d;
+}
+
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px 36px;
+  width: 340px;
+  text-align: center;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-bottom: 28px;
+}
+
+.logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+}
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 6px;
+}
+
+.sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.field {
+  text-align: left;
+  margin-bottom: 14px;
+}
+
+label {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+input {
+  width: 100%;
+  background: #242420;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.88rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+input:focus { border-color: var(--accent); }
+input.error { border-color: var(--danger); }
+
+.error-msg {
+  font-size: 0.75rem;
+  color: var(--danger);
+  margin-bottom: 14px;
+  min-height: 18px;
+  text-align: left;
+}
+
+button {
+  width: 100%;
+  background: var(--accent);
+  color: #111109;
+  border: none;
+  border-radius: 8px;
+  padding: 11px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.04em;
+  margin-top: 4px;
+}
+
+button:hover { background: #d4f84a; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="logo"><span class="logo-dot"></span>Fake JIRA</div>
+  <h1>Sign in</h1>
+  <p class="sub">Team access only</p>
+
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" autocomplete="email" placeholder="you@example.com">
+  </div>
+  <div class="field">
+    <label>Password</label>
+    <input type="password" id="password" autocomplete="current-password" placeholder="••••••••">
+  </div>
+  <div class="error-msg" id="error-msg"></div>
+  <button id="btn" onclick="signIn()">Sign in</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script>
+async function signIn() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn      = document.getElementById('btn');
+  const errorMsg = document.getElementById('error-msg');
+
+  errorMsg.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  const { error } = await window._supabase.auth.signInWithPassword({ email, password });
+
+  if (error) {
+    errorMsg.textContent = error.message;
+    btn.disabled = false;
+    btn.textContent = 'Sign in';
+    document.getElementById('password').classList.add('error');
+    setTimeout(() => document.getElementById('password').classList.remove('error'), 1500);
+  } else {
+    const redirect = sessionStorage.getItem('auth_redirect') || 'index.html';
+    sessionStorage.removeItem('auth_redirect');
+    location.replace(redirect);
+  }
+}
+
+// Allow Enter key on either field
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') signIn();
+});
+</script>
+</body>
+</html>
