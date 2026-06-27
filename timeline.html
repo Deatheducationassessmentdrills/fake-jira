@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timeline</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ── DESIGN TOKENS ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #111109;
+  --surface:   #1a1a17;
+  --surface2:  #242420;
+  --surface3:  #2c2c28;
+  --border:    #363630;
+  --border2:   #424240;
+  --text:      #f0f0ea;
+  --muted:     #7a7a70;
+  --muted2:    #9a9a90;
+  --accent:    #c8f135;
+
+  --col-ideas:    #3a8fff;
+  --col-backlog:  #a0a0b8;
+  --col-progress: #f5a623;
+  --col-blocked:  #ff4d6d;
+  --col-done:     #3ecf8e;
+
+  --sidebar-w: 220px;
+  --header-h:  56px;
+  --row-h:     38px;
+  --label-w:   220px;
+}
+
+[data-theme="light"] {
+  --bg:      #f5f5ef;
+  --surface: #ffffff;
+  --surface2:#ececе6;
+  --surface3:#e4e4de;
+  --border:  #d4d4cc;
+  --border2: #c0c0b8;
+  --text:    #1a1a16;
+  --muted:   #888880;
+  --muted2:  #666660;
+  --accent:  #5a9e00;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  grid-template-rows: var(--header-h) 1fr;
+  grid-template-areas:
+    "sidebar header"
+    "sidebar main";
+}
+
+/* ── SIDEBAR ────────────────────────────────────────────────────────────────── */
+.sidebar {
+  grid-area: sidebar;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  grid-row: 1 / -1;
+}
+
+.sidebar-logo {
+  padding: 0 20px;
+  height: var(--header-h);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.sidebar-logo-mark {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.sidebar-nav {
+  padding: 12px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-nav-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  padding: 0 8px 6px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--muted2);
+  text-decoration: none;
+  transition: background 0.12s, color 0.12s;
+  cursor: pointer;
+  font-family: 'DM Mono', monospace;
+}
+
+.nav-link:hover { background: var(--surface2); color: var(--text); }
+.nav-link.active { background: var(--surface2); color: var(--text); }
+
+.nav-link-icon {
+  font-size: 0.85rem;
+  width: 16px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.sidebar-bottom {
+  margin-top: auto;
+  padding: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sign-out-mobile { display: none; }
+
+/* ── HEADER ─────────────────────────────────────────────────────────────────── */
+header {
+  grid-area: header;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  gap: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.page-subtitle {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.theme-toggle {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 9px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  color: var(--text);
+  transition: border-color 0.15s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.theme-toggle:hover { border-color: var(--border2); }
+
+/* ── RANGE CONTROLS ─────────────────────────────────────────────────────────── */
+.range-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  color: var(--muted2);
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+}
+
+.range-btn:hover, .range-btn.active {
+  background: var(--surface3);
+  color: var(--text);
+  border-color: var(--border2);
+}
+
+/* ── MAIN / GANTT ───────────────────────────────────────────────────────────── */
+main {
+  grid-area: main;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.gantt-wrap {
+  flex: 1;
+  overflow: auto;
+  position: relative;
+}
+
+/* Sticky two-part header: labels column + scrolling axis */
+.gantt-header {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  min-width: max-content;
+}
+
+.gantt-label-col {
+  width: var(--label-w);
+  min-width: var(--label-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 8px 14px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+
+.gantt-axis {
+  flex: 1;
+  position: relative;
+  height: 36px;
+}
+
+.axis-month {
+  position: absolute;
+  top: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+  font-size: 0.7rem;
+  color: var(--muted);
+  border-right: 1px solid var(--border);
+  white-space: nowrap;
+  user-select: none;
+}
+
+/* Rows */
+.gantt-body {
+  min-width: max-content;
+}
+
+.gantt-row {
+  display: flex;
+  height: var(--row-h);
+  border-bottom: 1px solid var(--border);
+}
+
+.gantt-row:hover { background: var(--surface2); }
+
+.gantt-item-label {
+  width: var(--label-w);
+  min-width: var(--label-w);
+  flex-shrink: 0;
+  border-right: 1px solid var(--border);
+  padding: 0 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.gantt-item-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.gantt-item-title {
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text);
+}
+
+.gantt-grid {
+  flex: 1;
+  position: relative;
+}
+
+.grid-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--border);
+}
+
+.today-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--accent);
+  opacity: 0.5;
+  z-index: 2;
+}
+
+.gantt-bar {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  height: 18px;
+  border-radius: 4px;
+  opacity: 0.85;
+  transition: opacity 0.12s;
+  cursor: pointer;
+  min-width: 4px;
+  z-index: 3;
+}
+
+.gantt-bar:hover { opacity: 1; }
+
+/* Tooltip */
+.gantt-tooltip {
+  position: fixed;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.75rem;
+  color: var(--text);
+  max-width: 240px;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  line-height: 1.6;
+}
+
+/* Undated section */
+.undated-section {
+  border-top: 1px solid var(--border);
+  padding: 16px 20px;
+  background: var(--bg);
+}
+
+.undated-title {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.undated-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.undated-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  color: var(--muted2);
+}
+
+.undated-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 0.8rem;
+  color: var(--text);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.2s, transform 0.2s;
+  pointer-events: none;
+  z-index: 200;
+}
+
+.toast.show { opacity: 1; transform: none; }
+
+/* ── RESPONSIVE ─────────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto 1fr;
+    grid-template-areas: "header" "sidebar" "main";
+    height: auto;
+    overflow: visible;
+  }
+
+  .sidebar {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-direction: row;
+    overflow-x: auto;
+    overflow-y: hidden;
+    grid-row: unset;
+  }
+
+  .sidebar-logo { height: auto; padding: 10px 14px; border-bottom: none; border-right: 1px solid var(--border); flex-shrink: 0; }
+  .sidebar-nav  { padding: 6px; border-bottom: none; border-right: 1px solid var(--border); flex-direction: row; gap: 4px; flex-shrink: 0; }
+  .sidebar-nav-label { display: none; }
+  .nav-link { width: auto; white-space: nowrap; padding: 6px 10px; }
+  .sidebar-bottom { display: none; }
+  .sign-out-mobile { display: inline-flex !important; }
+
+  main { overflow: auto; height: calc(100vh - 112px); }
+
+  header { padding: 0 14px; }
+  .range-btn span { display: none; }
+}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <span class="sidebar-logo-mark">
+      <span class="logo-dot"></span>Fake JIRA
+    </span>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="sidebar-nav-label">Views</div>
+    <a class="nav-link" href="index.html">
+      <span class="nav-link-icon">⬡</span> Kanban
+    </a>
+    <a class="nav-link" href="backlog.html">
+      <span class="nav-link-icon">☰</span> Backlog
+    </a>
+    <a class="nav-link active" href="timeline.html">
+      <span class="nav-link-icon">◫</span> Timeline
+    </a>
+  </nav>
+  <div class="sidebar-bottom">
+    <a href="token-editor.html" class="nav-link">
+      <span class="nav-link-icon">◈</span> Token Editor
+    </a>
+    <button class="nav-link" onclick="signOut()" style="background:none;border:none;cursor:pointer;width:100%;text-align:left;">
+      <span class="nav-link-icon">⏻</span> Sign out
+    </button>
+  </div>
+</aside>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <span class="page-title">Timeline</span>
+    <span class="page-subtitle" id="header-subtitle"></span>
+  </div>
+  <div class="header-actions">
+    <button class="range-btn" id="range-1m" onclick="setRange(1)"><span>1 </span>month</button>
+    <button class="range-btn active" id="range-3m" onclick="setRange(3)"><span>3 </span>months</button>
+    <button class="range-btn" id="range-6m" onclick="setRange(6)"><span>6 </span>months</button>
+    <button class="range-btn" id="range-12m" onclick="setRange(12)">year</button>
+    <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">🌙</button>
+    <button class="theme-toggle sign-out-mobile" onclick="signOut()" title="Sign out">⏻</button>
+  </div>
+</header>
+
+<!-- MAIN -->
+<main>
+  <div class="gantt-wrap" id="gantt-wrap">
+    <div class="gantt-header" id="gantt-header">
+      <div class="gantt-label-col">Item</div>
+      <div class="gantt-axis" id="gantt-axis"></div>
+    </div>
+    <div class="gantt-body" id="gantt-body"></div>
+  </div>
+  <div class="undated-section" id="undated-section" style="display:none">
+    <div class="undated-title">No dates set</div>
+    <div class="undated-grid" id="undated-grid"></div>
+  </div>
+</main>
+
+<div class="gantt-tooltip" id="tooltip" style="display:none"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STATUS_COLORS = {
+  ideas:    'var(--col-ideas)',
+  backlog:  'var(--col-backlog)',
+  progress: 'var(--col-progress)',
+  blocked:  'var(--col-blocked)',
+  done:     'var(--col-done)',
+};
+
+const STATUS_LABELS = {
+  ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress',
+  blocked: 'Blocked', done: 'Done'
+};
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function loadItems() {
+  try {
+    const raw = localStorage.getItem('backlog_items');
+    if (!raw) return [];
+    return JSON.parse(raw).map(i => ({
+      start_date: '', end_date: '', ...i
+    })).filter(i => !i.deleted_at && !i.archived);
+  } catch (e) { return []; }
+}
+
+// ── RANGE STATE ───────────────────────────────────────────────────────────────
+let rangeMonths = 3;
+const DAY_PX    = 4; // pixels per day
+
+function setRange(months) {
+  rangeMonths = months;
+  document.querySelectorAll('.range-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`range-${months}m`).classList.add('active');
+  renderGantt();
+}
+
+// ── RENDER ────────────────────────────────────────────────────────────────────
+function renderGantt() {
+  const items = loadItems();
+  const dated   = items.filter(i => i.start_date || i.end_date);
+  const undated = items.filter(i => !i.start_date && !i.end_date);
+
+  // ── Compute time window ────────────────────────────────────
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Default window: 2 weeks before today to rangeMonths ahead
+  let windowStart = new Date(today);
+  windowStart.setDate(windowStart.getDate() - 14);
+
+  let windowEnd = new Date(today);
+  windowEnd.setMonth(windowEnd.getMonth() + rangeMonths);
+
+  // Expand to include all dated items
+  dated.forEach(item => {
+    if (item.start_date) {
+      const d = new Date(item.start_date);
+      if (d < windowStart) { windowStart = new Date(d); windowStart.setDate(windowStart.getDate() - 7); }
+    }
+    if (item.end_date) {
+      const d = new Date(item.end_date);
+      if (d > windowEnd) { windowEnd = new Date(d); windowEnd.setDate(windowEnd.getDate() + 7); }
+    }
+  });
+
+  // Snap to month boundaries
+  windowStart = new Date(windowStart.getFullYear(), windowStart.getMonth(), 1);
+  windowEnd   = new Date(windowEnd.getFullYear(),   windowEnd.getMonth() + 1, 1);
+
+  const totalDays  = Math.round((windowEnd - windowStart) / 86400000);
+  const totalWidth = totalDays * DAY_PX;
+
+  // ── Build month axis ───────────────────────────────────────
+  const axis = document.getElementById('gantt-axis');
+  axis.style.width = totalWidth + 'px';
+  axis.innerHTML = '';
+
+  let cur = new Date(windowStart);
+  while (cur < windowEnd) {
+    const monthStart = new Date(cur.getFullYear(), cur.getMonth(), 1);
+    const monthEnd   = new Date(cur.getFullYear(), cur.getMonth() + 1, 1);
+    const left = Math.round((monthStart - windowStart) / 86400000) * DAY_PX;
+    const width = Math.round((monthEnd - monthStart) / 86400000) * DAY_PX;
+
+    const label = cur.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    const el = document.createElement('div');
+    el.className = 'axis-month';
+    el.style.left  = left + 'px';
+    el.style.width = width + 'px';
+    el.textContent = label;
+    axis.appendChild(el);
+
+    cur.setMonth(cur.getMonth() + 1);
+  }
+
+  // ── Build rows ─────────────────────────────────────────────
+  const body = document.getElementById('gantt-body');
+  body.innerHTML = '';
+  body.style.width = (totalWidth + 220) + 'px'; // label-w + chart
+
+  // Today line offset
+  const todayOffset = Math.round((today - windowStart) / 86400000) * DAY_PX;
+
+  dated.forEach(item => {
+    const row = document.createElement('div');
+    row.className = 'gantt-row';
+
+    const color = STATUS_COLORS[item.status] || 'var(--muted)';
+
+    // Label cell
+    const labelCell = document.createElement('div');
+    labelCell.className = 'gantt-item-label';
+    labelCell.innerHTML = `
+      <span class="gantt-item-dot" style="background:${color}"></span>
+      <span class="gantt-item-title" title="${escHtml(item.title)}">${escHtml(item.title)}</span>
+    `;
+    row.appendChild(labelCell);
+
+    // Grid cell
+    const grid = document.createElement('div');
+    grid.className = 'gantt-grid';
+    grid.style.width = totalWidth + 'px';
+
+    // Month grid lines
+    let c = new Date(windowStart);
+    while (c < windowEnd) {
+      const xp = Math.round((c - windowStart) / 86400000) * DAY_PX;
+      const line = document.createElement('div');
+      line.className = 'grid-line';
+      line.style.left = xp + 'px';
+      grid.appendChild(line);
+      c.setMonth(c.getMonth() + 1);
+    }
+
+    // Today line
+    if (todayOffset >= 0 && todayOffset <= totalWidth) {
+      const tl = document.createElement('div');
+      tl.className = 'today-line';
+      tl.style.left = todayOffset + 'px';
+      grid.appendChild(tl);
+    }
+
+    // Bar
+    const start = item.start_date ? new Date(item.start_date) : null;
+    const end   = item.end_date   ? new Date(item.end_date)   : null;
+
+    if (start || end) {
+      const barStart = start || end;
+      const barEnd   = end   || start;
+      const leftPx   = Math.round((barStart - windowStart) / 86400000) * DAY_PX;
+      const durDays  = Math.max(1, Math.round((barEnd - barStart) / 86400000));
+      const widthPx  = Math.max(4, durDays * DAY_PX);
+
+      const bar = document.createElement('div');
+      bar.className = 'gantt-bar';
+      bar.style.left       = leftPx + 'px';
+      bar.style.width      = widthPx + 'px';
+      bar.style.background = color;
+
+      const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      const tipLines = [
+        `<strong>${escHtml(item.title)}</strong>`,
+        `Status: ${STATUS_LABELS[item.status] || item.status}`,
+        start ? `Start: ${fmt(start)}` : 'No start date',
+        end   ? `End: ${fmt(end)}`     : 'No end date',
+      ];
+
+      bar.addEventListener('mouseenter', e => showTooltip(e, tipLines.join('<br>')));
+      bar.addEventListener('mousemove',  e => moveTooltip(e));
+      bar.addEventListener('mouseleave', hideTooltip);
+
+      grid.appendChild(bar);
+    }
+
+    row.appendChild(grid);
+    body.appendChild(row);
+  });
+
+  // ── Undated section ────────────────────────────────────────
+  const undatedSection = document.getElementById('undated-section');
+  const undatedGrid    = document.getElementById('undated-grid');
+
+  if (undated.length > 0) {
+    undatedGrid.innerHTML = undated.map(item => {
+      const color = STATUS_COLORS[item.status] || 'var(--muted)';
+      return `<span class="undated-pill">
+        <span class="undated-pill-dot" style="background:${color}"></span>
+        ${escHtml(item.title)}
+      </span>`;
+    }).join('');
+    undatedSection.style.display = '';
+  } else {
+    undatedSection.style.display = 'none';
+  }
+
+  // ── Subtitle ───────────────────────────────────────────────
+  const total = items.length;
+  const withDates = dated.length;
+  document.getElementById('header-subtitle').textContent =
+    `${total} item${total !== 1 ? 's' : ''} · ${withDates} on timeline`;
+}
+
+// ── TOOLTIP ───────────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(e, html) {
+  tooltip.innerHTML = html;
+  tooltip.style.display = '';
+  moveTooltip(e);
+}
+
+function moveTooltip(e) {
+  const pad = 14;
+  let x = e.clientX + pad;
+  let y = e.clientY + pad;
+  const tw = tooltip.offsetWidth;
+  const th = tooltip.offsetHeight;
+  if (x + tw > window.innerWidth  - 8) x = e.clientX - tw - pad;
+  if (y + th > window.innerHeight - 8) y = e.clientY - th - pad;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top  = y + 'px';
+}
+
+function hideTooltip() {
+  tooltip.style.display = 'none';
+}
+
+// ── THEME ─────────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  const isDark = !document.documentElement.hasAttribute('data-theme');
+  document.documentElement.setAttribute('data-theme', isDark ? 'light' : '');
+  if (!isDark) document.documentElement.removeAttribute('data-theme');
+  document.getElementById('theme-btn').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('theme', isDark ? 'light' : 'dark');
+}
+
+(function () {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('theme-btn');
+      if (btn) btn.textContent = '☀️';
+    });
+  }
+})();
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  renderGantt();
+
+  // Re-render if localStorage changes (backlog updated in another tab)
+  window.addEventListener('storage', e => {
+    if (e.key === 'backlog_items') renderGantt();
+  });
+});
+</script>
+</body>
+</html>

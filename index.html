@@ -293,6 +293,7 @@
   }
 
   .theme-toggle:hover { border-color: var(--border2); }
+  .sign-out-mobile { display: none; }
 
   /* ── MAIN CONTENT ────────────────────────────────────────── */
   main {
@@ -669,6 +670,7 @@
     .sidebar-stat-row { padding: 4px 8px; white-space: nowrap; }
     .sidebar-bottom { display: none; }
     .sidebar-stat-name { font-size: 0.96rem; }
+    .sign-out-mobile { display: inline-flex !important; }
 
     header { padding: 0 16px; }
 
@@ -935,6 +937,9 @@
     <a class="nav-link" href="backlog.html">
       <span class="nav-link-icon">☰</span> Backlog
     </a>
+    <a class="nav-link" href="timeline.html">
+      <span class="nav-link-icon">◫</span> Timeline
+    </a>
   </nav>
 
   <div class="sidebar-stats" id="sidebar-stats">
@@ -964,6 +969,7 @@
       <span>Submit via GitHub</span>
     </a>
     <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">🌙</button>
+    <button class="theme-toggle sign-out-mobile" onclick="signOut()" title="Sign out">⏻</button>
     <button class="btn btn-primary" onclick="openSubmitModal()">+ Submit Idea</button>
   </div>
 </header>
@@ -1040,10 +1046,10 @@ const TEAM = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
 
 // ─── INITIAL DATA ─────────────────────────────────────────────────────────────
 let items = [
-  { id: 1, title: 'Set up GitHub repo & enable GitHub Pages', status: 'progress', tag: 'Setup', desc: 'Create the repo, push index.html, enable Pages in settings.', date: '2025-04-24', reporter: '', assignees: [] },
-  { id: 2, title: 'Replace Formspree endpoint with real form ID', status: 'backlog', tag: 'Setup', desc: 'Sign up at formspree.io, create a form, paste the ID into the HTML.', date: '2025-04-24', reporter: '', assignees: [] },
-  { id: 3, title: 'Update GitHub Issues URL in config section', status: 'backlog', tag: 'Setup', desc: 'Find the GITHUB_ISSUES_URL const near the top of the script and update it.', date: '2025-04-24', reporter: '', assignees: [] },
-  { id: 4, title: 'Add SMS submission via Twilio (future)', status: 'ideas', tag: 'Feature', desc: 'When ready, wire up a Twilio webhook that posts to the board.', date: '2025-04-24', reporter: '', assignees: [] },
+  { id: 1, title: 'Set up GitHub repo & enable GitHub Pages', status: 'progress', tag: 'Setup', desc: 'Create the repo, push index.html, enable Pages in settings.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 2, title: 'Replace Formspree endpoint with real form ID', status: 'backlog', tag: 'Setup', desc: 'Sign up at formspree.io, create a form, paste the ID into the HTML.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 3, title: 'Update GitHub Issues URL in config section', status: 'backlog', tag: 'Setup', desc: 'Find the GITHUB_ISSUES_URL const near the top of the script and update it.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
+  { id: 4, title: 'Add SMS submission via Twilio (future)', status: 'ideas', tag: 'Feature', desc: 'When ready, wire up a Twilio webhook that posts to the board.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
 ];
 
 let nextId = 100;
@@ -1202,7 +1208,15 @@ function openDetail(id) {
       </select>
     </div>
     <div class="detail-field">
-      <div class="detail-field-label">Date</div>
+      <div class="detail-field-label">Start Date</div>
+      <input type="date" class="detail-field-select" style="color-scheme:dark" value="${item.start_date||''}" onchange="updateDetailField(${id},'start_date',this.value)">
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">End Date</div>
+      <input type="date" class="detail-field-select" style="color-scheme:dark" value="${item.end_date||''}" onchange="updateDetailField(${id},'end_date',this.value)">
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Added</div>
       <div class="detail-field-date">${d || '—'}</div>
     </div>
     <div class="detail-field">
