@@ -49,91 +49,6 @@ body {
   grid-template-rows: auto auto 1fr;
 }
 
-/* ── LOCK SCREEN ─────────────────────────────────────────── */
-#lock-screen {
-  position: fixed;
-  inset: 0;
-  background: var(--bg);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.lock-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 36px;
-  width: 340px;
-  text-align: center;
-}
-
-.lock-icon { font-size: 1.17rem; margin-bottom: 14px; }
-
-.lock-title {
-  font-family: 'Syne', sans-serif;
-  font-size: 1.17rem;
-  font-weight: 800;
-  margin-bottom: 5px;
-}
-
-.lock-sub {
-  font-size: 0.96rem;
-  color: var(--muted);
-  margin-bottom: 24px;
-  line-height: 1.6;
-}
-
-.lock-input {
-  width: 100%;
-  background: var(--surface2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 11px 16px;
-  font-family: 'DM Mono', monospace;
-  font-size: 1.17rem;
-  color: var(--text);
-  outline: none;
-  text-align: center;
-  letter-spacing: 0.2em;
-  margin-bottom: 10px;
-  transition: border-color 0.15s;
-}
-
-.lock-input:focus { border-color: var(--accent); }
-.lock-input.error { border-color: var(--danger); animation: shake 0.3s; }
-
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  25%      { transform: translateX(-5px); }
-  75%      { transform: translateX(5px); }
-}
-
-.lock-btn {
-  width: 100%;
-  background: var(--accent);
-  color: #111109;
-  border: none;
-  border-radius: 8px;
-  padding: 11px;
-  font-family: 'Syne', sans-serif;
-  font-size: 1.17rem;
-  font-weight: 800;
-  cursor: pointer;
-  transition: background 0.15s;
-  letter-spacing: 0.04em;
-}
-
-.lock-btn:hover { background: #d4f84a; }
-
-.lock-note {
-  font-size: 0.96rem;
-  color: var(--muted);
-  margin-top: 14px;
-  line-height: 1.6;
-}
-
 /* ── NAV BAR (links to other pages) ─────────────────────── */
 .nav-bar {
   display: flex;
@@ -768,23 +683,11 @@ label {
   #save-btn { display: inline-flex !important; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 </head>
 <body>
-
-<!-- LOCK SCREEN -->
-<div id="lock-screen">
-  <div class="lock-card">
-    <div class="lock-icon">🔐</div>
-    <div class="lock-title">Token Editor</div>
-    <div class="lock-sub">This tool has write access to your GitHub repo.<br>Enter the editor password to continue.</div>
-    <input type="password" class="lock-input" id="lock-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')unlock()">
-    <button class="lock-btn" onclick="unlock()">Unlock</button>
-    <div class="lock-note">
-      Password set in config below.<br>
-      <span style="color:var(--accent)">TODO:</span> swap for Supabase Auth when approved.
-    </div>
-  </div>
-</div>
 
 <!-- NAV BAR -->
 <nav class="nav-bar">
@@ -794,6 +697,7 @@ label {
   <a class="nav-link" href="index.html">⬡ Kanban</a>
   <a class="nav-link" href="backlog.html">☰ Backlog</a>
   <a class="nav-link active" href="token-editor.html">◈ Token Editor</a>
+  <button class="nav-link" onclick="signOut()" style="background:none;border:none;cursor:pointer;margin-left:auto;">⏻ Sign out</button>
 </nav>
 
 <!-- HEADER -->
@@ -886,9 +790,6 @@ label {
 <div class="toast" id="toast"></div>
 
 <script>
-// ── CONFIG ────────────────────────────────────────────────────────────────────
-const EDITOR_PASSWORD = 'tokens2024';
-
 const PREVIEW_PAGES = [
   { label: 'Board',  type: 'url',  src: 'index.html' },
   { label: 'Form',   type: 'html', src: FORM_PREVIEW_HTML() },
@@ -985,24 +886,6 @@ let activeToken       = null;
 let pendingChanges    = {};
 let currentPreviewTab = 0;
 let collapsedSections = {};
-
-// ── LOCK ──────────────────────────────────────────────────────────────────────
-function unlock() {
-  const val = document.getElementById('lock-input').value;
-  if (val === EDITOR_PASSWORD) {
-    document.getElementById('lock-screen').style.display = 'none';
-    init();
-  } else {
-    const input = document.getElementById('lock-input');
-    input.classList.add('error');
-    input.value = '';
-    setTimeout(() => input.classList.remove('error'), 400);
-  }
-}
-
-document.getElementById('lock-input').addEventListener('keydown', e => {
-  if (e.key === 'Enter') unlock();
-});
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 function init() {
@@ -1384,6 +1267,8 @@ function toggleTheme() {
   document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
   localStorage.setItem('theme', isDark ? 'light' : 'dark');
 }
+
+init();
 
 (function() {
   const saved = localStorage.getItem('theme');

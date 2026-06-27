@@ -913,6 +913,9 @@
     .detail-panel { width: 100%; right: -100%; }
   }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<script src="auth.js"></script>
 </head>
 <body>
 
@@ -943,6 +946,9 @@
     <a href="token-editor.html" class="nav-link">
       <span class="nav-link-icon">◈</span> Token Editor
     </a>
+    <button class="nav-link" onclick="signOut()" style="background:none;border:none;cursor:pointer;width:100%;text-align:left;">
+      <span class="nav-link-icon">⏻</span> Sign out
+    </button>
   </div>
 </aside>
 
