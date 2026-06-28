@@ -918,6 +918,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
+<script src="db.js"></script>
 </head>
 <body>
 
@@ -1044,15 +1045,8 @@ const COLUMNS = [
 ];
 const TEAM = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
 
-// ─── INITIAL DATA ─────────────────────────────────────────────────────────────
-let items = [
-  { id: 1, title: 'Set up GitHub repo & enable GitHub Pages', status: 'progress', tag: 'Setup', desc: 'Create the repo, push index.html, enable Pages in settings.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 2, title: 'Replace Formspree endpoint with real form ID', status: 'backlog', tag: 'Setup', desc: 'Sign up at formspree.io, create a form, paste the ID into the HTML.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 3, title: 'Update GitHub Issues URL in config section', status: 'backlog', tag: 'Setup', desc: 'Find the GITHUB_ISSUES_URL const near the top of the script and update it.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 4, title: 'Add SMS submission via Twilio (future)', status: 'ideas', tag: 'Feature', desc: 'When ready, wire up a Twilio webhook that posts to the board.', date: '2025-04-24', reporter: '', assignees: [], start_date: '', end_date: '' },
-];
-
-let nextId = 100;
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+let items = [];
 
 // ─── RENDER ───────────────────────────────────────────────────────────────────
 function render() {
@@ -1143,18 +1137,15 @@ function openSubmitModal() {
   setTimeout(() => document.getElementById('idea-title').focus(), 200);
 }
 
-function submitIdea() {
+async function submitIdea() {
   const title = document.getElementById('idea-title').value.trim();
   if (!title) { showToast('Please enter a title'); return; }
-  const desc = document.getElementById('idea-desc').value.trim();
-  items.push({
-    id: nextId++,
-    title,
-    status: 'ideas',
-    tag: 'Idea',
-    desc,
-    date: new Date().toISOString().split('T')[0],
-  });
+  const desc  = document.getElementById('idea-desc').value.trim();
+  const today = new Date().toISOString().split('T')[0];
+  const draft = { title, status: 'ideas', tags: ['Idea'], boards: [], priority: 'Medium', date: today, notes: desc, reporter: '', assignees: [], start_date: '', end_date: '' };
+  const { id, error } = await DB.insertItem(draft);
+  if (error) { showToast('Failed to add idea'); return; }
+  items.push({ ...draft, id, tag: 'Idea', desc });
   render();
   closeModal('submit-modal');
   showToast('✓ Idea added to the board');
@@ -1246,7 +1237,7 @@ function saveDetailTitle() {
   const item = items.find(i => i.id === _detailOpenId);
   if (!item) return;
   const val = document.getElementById('detail-panel-title').value.trim();
-  if (val) { item.title = val; render(); }
+  if (val) { item.title = val; render(); DB.updateItem(_detailOpenId, { title: val }); }
 }
 
 function updateDetailField(id, field, val) {
@@ -1254,11 +1245,15 @@ function updateDetailField(id, field, val) {
   if (!item) return;
   item[field] = val;
   render();
+  // map kanban-local fields to DB column names
+  if (field === 'tag')  { DB.updateItem(id, { tags: val ? [val] : [] }); }
+  else if (field === 'desc') { DB.updateItem(id, { notes: val }); }
+  else { DB.updateItem(id, { [field]: val }); }
 }
 
 function moveCard(id, newStatus) {
   const item = items.find(i => i.id === id);
-  if (item) { item.status = newStatus; render(); closeDetail(); showToast('✓ Moved'); }
+  if (item) { item.status = newStatus; render(); closeDetail(); showToast('✓ Moved'); DB.updateItem(id, { status: newStatus }); }
 }
 
 let activeDetailAssigneePicker = null;
@@ -1292,6 +1287,7 @@ function addAssigneeDetail(id, name) {
     render();
     const wrap = document.getElementById(`detail-assignees-${id}`);
     if (wrap) wrap.innerHTML = renderAssigneePills(item, id);
+    DB.updateItem(id, { assignees: item.assignees });
   }
 }
 
@@ -1302,6 +1298,7 @@ function removeAssigneeDetail(id, name) {
   render();
   const wrap = document.getElementById(`detail-assignees-${id}`);
   if (wrap) wrap.innerHTML = renderAssigneePills(item, id);
+  DB.updateItem(id, { assignees: item.assignees });
 }
 
 // ─── DELETE ───────────────────────────────────────────────────────────────────
@@ -1310,6 +1307,7 @@ function deleteCard(e, id) {
   items = items.filter(i => i.id !== id);
   render();
   showToast('Removed');
+  DB.deleteItem(id);
 }
 
 // ─── UTILS ────────────────────────────────────────────────────────────────────
@@ -1356,7 +1354,16 @@ function toggleTheme() {
 })();
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
-render();
+(async function init() {
+  try {
+    items = await DB.loadItems();
+    // Map DB fields to kanban-local fields
+    items = items.map(i => ({ ...i, tag: (i.tags||[])[0] || '', desc: i.notes || '' }));
+  } catch (e) {
+    console.error('Failed to load items', e);
+  }
+  render();
+})();
 </script>
 </body>
 </html>

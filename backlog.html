@@ -988,6 +988,7 @@ tbody tr:hover .row-actions { opacity: 1; }
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
+<script src="db.js"></script>
 </head>
 <body>
 
@@ -1145,7 +1146,7 @@ const STATUSES     = ['ideas', 'backlog', 'progress', 'blocked', 'done'];
 const STATUS_LABELS = { ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress', blocked: 'Blocked', done: 'Done' };
 const PRIORITIES   = ['High', 'Medium', 'Low'];
 const TEAM = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
-let boards = ['Fake JIRA to-do list', 'Design System', 'DEAD 5.0 Wishlist', 'DEAD Admin Wishlist'];
+let boards = [];
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 function render() {
@@ -1290,12 +1291,20 @@ function closeTagPicker() {
 
 function addTag(id, tag) {
   const item = items.find(i => i.id === id);
-  if (item && !item.tags.includes(tag)) { item.tags.push(tag); render(); saveToStorage(); }
+  if (item && !item.tags.includes(tag)) {
+    item.tags.push(tag);
+    render();
+    DB.updateItem(id, { tags: item.tags });
+  }
 }
 
 function removeTag(id, tag) {
   const item = items.find(i => i.id === id);
-  if (item) { item.tags = item.tags.filter(t => t !== tag); render(); saveToStorage(); }
+  if (item) {
+    item.tags = item.tags.filter(t => t !== tag);
+    render();
+    DB.updateItem(id, { tags: item.tags });
+  }
 }
 
 // ── BOARD PICKER ──────────────────────────────────────────────────────────────
@@ -1373,12 +1382,20 @@ function addAssignee(id, name) {
   const item = items.find(i => i.id === id);
   if (!item) return;
   if (!item.assignees) item.assignees = [];
-  if (!item.assignees.includes(name)) { item.assignees.push(name); render(); saveToStorage(); }
+  if (!item.assignees.includes(name)) {
+    item.assignees.push(name);
+    render();
+    DB.updateItem(id, { assignees: item.assignees });
+  }
 }
 
 function removeAssignee(id, name) {
   const item = items.find(i => i.id === id);
-  if (item) { item.assignees = (item.assignees||[]).filter(n => n !== name); render(); saveToStorage(); }
+  if (item) {
+    item.assignees = (item.assignees||[]).filter(n => n !== name);
+    render();
+    DB.updateItem(id, { assignees: item.assignees });
+  }
 }
 
 function toggleBoard(id, board) {
@@ -1390,25 +1407,37 @@ function toggleBoard(id, board) {
   } else {
     item.boards.push(board);
   }
-  render(); saveToStorage();
+  render();
+  DB.updateItem(id, { boards: item.boards });
 }
 
 function removeBoard(id, board) {
   const item = items.find(i => i.id === id);
-  if (item) { item.boards = (item.boards || []).filter(b => b !== board); render(); saveToStorage(); }
+  if (item) {
+    item.boards = (item.boards || []).filter(b => b !== board);
+    render();
+    DB.updateItem(id, { boards: item.boards });
+  }
 }
 
-function createBoard(id) {
+async function createBoard(id) {
   const input = document.getElementById(`new-board-input-${id}`);
   const name = input?.value.trim();
   if (!name) return;
-  if (!boards.includes(name)) { boards.push(name); refreshBoardFilter(); }
+  if (!boards.includes(name)) {
+    boards.push(name);
+    refreshBoardFilter();
+    await window._supabase.from('backlog_boards').upsert({ name }, { onConflict: 'name' });
+  }
   const item = items.find(i => i.id === id);
   if (item) {
     if (!item.boards) item.boards = [];
-    if (!item.boards.includes(name)) item.boards.push(name);
+    if (!item.boards.includes(name)) {
+      item.boards.push(name);
+      DB.updateItem(id, { boards: item.boards });
+    }
   }
-  closeBoardPicker(); render(); saveToStorage();
+  closeBoardPicker(); render();
   showToast(`✓ Board "${name}" created`);
 }
 
@@ -1455,59 +1484,73 @@ function renderSettingsBoardList() {
     </div>`).join('');
 }
 
-function renameBoard(idx, newName) {
+async function renameBoard(idx, newName) {
   newName = newName.trim();
   if (!newName || newName === boards[idx]) { renderSettingsBoardList(); return; }
   if (boards.includes(newName)) { showToast('A board with that name already exists', 'error'); renderSettingsBoardList(); return; }
   const oldName = boards[idx];
   boards[idx] = newName;
+  const affected = items.filter(i => (i.boards||[]).includes(oldName));
   items.forEach(item => {
     if (item.boards) item.boards = item.boards.map(b => b === oldName ? newName : b);
   });
-  refreshBoardFilter(); render(); saveToStorage();
+  refreshBoardFilter(); render();
   showToast(`✓ Renamed to "${newName}"`);
+  await window._supabase.from('backlog_boards').update({ name: newName }).eq('name', oldName);
+  await Promise.all(affected.map(item => DB.updateItem(item.id, { boards: item.boards })));
 }
 
-function deleteBoard(idx) {
+async function deleteBoard(idx) {
   const name = boards[idx];
+  const affected = items.filter(i => (i.boards||[]).includes(name));
   boards.splice(idx, 1);
   items.forEach(item => {
     if (item.boards) item.boards = item.boards.filter(b => b !== name);
   });
-  refreshBoardFilter(); render(); saveToStorage();
+  refreshBoardFilter(); render();
   showToast(`Removed board "${name}"`);
+  await window._supabase.from('backlog_boards').delete().eq('name', name);
+  await Promise.all(affected.map(item => DB.updateItem(item.id, { boards: item.boards })));
 }
 
-function settingsCreateBoard() {
+async function settingsCreateBoard() {
   const input = document.getElementById('settings-new-board-input');
   const name = input.value.trim();
   if (!name) return;
   if (boards.includes(name)) { showToast('Board already exists', 'error'); return; }
   boards.push(name);
   input.value = '';
-  refreshBoardFilter(); render(); saveToStorage();
+  refreshBoardFilter(); render();
   showToast(`✓ Board "${name}" created`);
+  await window._supabase.from('backlog_boards').insert({ name });
 }
 
 // ── CRUD ──────────────────────────────────────────────────────────────────────
-function addRow() {
-  items.unshift({ id: nextId++, title: '', status: 'backlog', tags: [], boards: [], priority: 'Medium', date: new Date().toISOString().split('T')[0], notes: '' });
-  render(); saveToStorage();
+async function addRow() {
+  const today = new Date().toISOString().split('T')[0];
+  const draft = { title: '', status: 'backlog', tags: [], boards: [], priority: 'Medium', date: today, notes: '', reporter: '', assignees: [], start_date: '', end_date: '' };
+  const { id, error } = await DB.insertItem(draft);
+  if (error) { showToast('Failed to add item', 'error'); return; }
+  items.unshift({ ...draft, id });
+  render();
   setTimeout(() => {
     const first = document.querySelector('#table-body tr:first-child .cell-edit');
     if (first) first.focus();
   }, 50);
 }
 
-function deleteRow(id) {
+async function deleteRow(id) {
   items = items.filter(i => i.id !== id);
-  render(); saveToStorage();
+  render();
+  const err = await DB.deleteItem(id);
+  if (err) showToast('Delete failed', 'error');
 }
 
 function updateField(id, field, value) {
   const item = items.find(i => i.id === id);
   if (item) item[field] = value;
-  updateStats(); updateCount(); saveToStorage();
+  updateStats(); updateCount();
+  DB.updateItem(id, { [field]: value });
 }
 
 // ── SORT ──────────────────────────────────────────────────────────────────────
@@ -1570,24 +1613,33 @@ function updateCount() {
   document.getElementById('item-count').textContent = `${items.length} item${items.length !== 1 ? 's' : ''}`;
 }
 
-// ── LOCAL STORAGE ─────────────────────────────────────────────────────────────
-function saveToStorage() {
+// ── SUPABASE LOAD ─────────────────────────────────────────────────────────────
+async function loadFromSupabase() {
   try {
-    localStorage.setItem('backlog_items',   JSON.stringify(items));
-    localStorage.setItem('backlog_boards',  JSON.stringify(boards));
-    localStorage.setItem('backlog_nextId',  nextId);
-  } catch(e) { console.warn('Storage save failed', e); }
-}
+    let [loadedItems, loadedBoards] = await Promise.all([DB.loadItems(), DB.loadBoards()]);
 
-function loadFromStorage() {
-  try {
-    const savedItems  = localStorage.getItem('backlog_items');
-    const savedBoards = localStorage.getItem('backlog_boards');
-    const savedNextId = localStorage.getItem('backlog_nextId');
-    if (savedItems)  items  = JSON.parse(savedItems).map(i => ({ start_date: '', end_date: '', ...i }));
-    if (savedBoards) boards = JSON.parse(savedBoards);
-    if (savedNextId) nextId = parseInt(savedNextId);
-  } catch(e) { console.warn('Storage load failed', e); }
+    if (loadedItems.length === 0 && localStorage.getItem('backlog_items')) {
+      showToast('Migrating local data to Supabase…');
+      const ok = await DB.migrateFromLocalStorage();
+      if (ok) {
+        showToast('✓ Migration complete');
+        [loadedItems, loadedBoards] = await Promise.all([DB.loadItems(), DB.loadBoards()]);
+      }
+    }
+
+    items = loadedItems;
+    boards = loadedBoards.length ? loadedBoards
+      : ['Fake JIRA to-do list', 'Design System', 'DEAD 5.0 Wishlist', 'DEAD Admin Wishlist'];
+
+    if (loadedBoards.length === 0) {
+      await Promise.all(boards.map(name =>
+        window._supabase.from('backlog_boards').upsert({ name }, { onConflict: 'name' })
+      ));
+    }
+  } catch (e) {
+    console.error('Load failed', e);
+    showToast('Failed to load data — check console', 'error');
+  }
 }
 
 // ── EXPORT ────────────────────────────────────────────────────────────────────
@@ -1665,9 +1717,11 @@ function showToast(msg, type = '') {
 }
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
-loadFromStorage();
-refreshBoardFilter();
-render();
+(async function init() {
+  await loadFromSupabase();
+  refreshBoardFilter();
+  render();
+})();
 </script>
 </body>
 </html>
