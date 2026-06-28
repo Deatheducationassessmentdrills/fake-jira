@@ -19,6 +19,7 @@
   --muted2:    #9a9a90;
   --accent:    #c8f135;
   --row-hover: #1e1e1a;
+  --title-col-w: 360px;
 
   --tag-feature:  #3a8fff;
   --tag-bug:      #ff4d6d;
@@ -502,7 +503,26 @@ th {
   white-space: nowrap;
   cursor: pointer;
   user-select: none;
+  position: relative;
 }
+
+#th-title { min-width: var(--title-col-w); }
+td:nth-child(2) { min-width: var(--title-col-w); }
+
+.col-resize-handle {
+  position: absolute; top: 0; right: 0;
+  width: 6px; height: 100%;
+  cursor: col-resize; z-index: 2;
+  user-select: none;
+}
+.col-resize-handle::after {
+  content: ''; position: absolute;
+  top: 20%; right: 1px; bottom: 20%;
+  width: 2px; border-radius: 2px;
+  background: var(--border2); opacity: 0;
+  transition: opacity 0.15s;
+}
+.col-resize-handle:hover::after { opacity: 1; }
 
 th:hover { color: var(--muted2); }
 th.sorted { color: var(--accent); }
@@ -1178,7 +1198,7 @@ tbody tr:hover .row-actions { opacity: 1; }
       <thead>
         <tr>
           <th style="width:34px">#</th>
-          <th onclick="sortBy('title')" class="sorted">Title <span class="sort-arrow">↕</span></th>
+          <th onclick="sortBy('title')" class="sorted" id="th-title">Title <span class="sort-arrow">↕</span><span class="col-resize-handle" id="title-resize-handle" onclick="event.stopPropagation()"></span></th>
           <th onclick="sortBy('status')" style="width:130px">Status <span class="sort-arrow">↕</span></th>
           <th style="width:190px">Tags</th>
           <th style="width:175px">Boards</th>
@@ -1934,6 +1954,39 @@ function removeAssigneeDetail(id, name) {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
+
+// ── COLUMN RESIZE ─────────────────────────────────────────────────────────────
+(function initTitleColResize() {
+  const saved = parseInt(localStorage.getItem('backlog_title_col_w'));
+  if (saved >= 150) document.documentElement.style.setProperty('--title-col-w', saved + 'px');
+
+  const handle = document.getElementById('title-resize-handle');
+  if (!handle) return;
+
+  handle.addEventListener('mousedown', e => {
+    e.preventDefault(); e.stopPropagation();
+    const startX = e.clientX;
+    const startW = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--title-col-w')) || 360;
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    function onMove(e) {
+      const w = Math.max(150, startW + e.clientX - startX);
+      document.documentElement.style.setProperty('--title-col-w', w + 'px');
+    }
+    function onUp() {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      const w = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--title-col-w'));
+      localStorage.setItem('backlog_title_col_w', w);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+})();
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 (async function init() {

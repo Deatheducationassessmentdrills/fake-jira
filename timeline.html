@@ -30,7 +30,7 @@
   --sidebar-w: 220px;
   --header-h:  56px;
   --row-h:     38px;
-  --label-w:   220px;
+  --label-w:   320px;
 }
 
 [data-theme="light"] {
@@ -416,6 +416,21 @@ main {
   flex-shrink: 0;
 }
 
+/* ── COLUMN RESIZE ──────────────────────────────────────────── */
+.col-resize-handle {
+  position: absolute; top: 0; right: 0;
+  width: 6px; height: 100%;
+  cursor: col-resize; z-index: 2; user-select: none;
+}
+.col-resize-handle::after {
+  content: ''; position: absolute;
+  top: 20%; right: 1px; bottom: 20%;
+  width: 2px; border-radius: 2px;
+  background: var(--border2); opacity: 0;
+  transition: opacity 0.15s;
+}
+.col-resize-handle:hover::after { opacity: 1; }
+
 /* ── DETAIL PANEL ───────────────────────────────────────────── */
 .detail-overlay {
   position: fixed; inset: 0;
@@ -626,7 +641,7 @@ main {
 <main>
   <div class="gantt-wrap" id="gantt-wrap">
     <div class="gantt-header" id="gantt-header">
-      <div class="gantt-label-col">Item</div>
+      <div class="gantt-label-col" style="position:relative">Item<span class="col-resize-handle" id="label-resize-handle"></span></div>
       <div class="gantt-axis" id="gantt-axis"></div>
     </div>
     <div class="gantt-body" id="gantt-body"></div>
@@ -675,6 +690,9 @@ const PRIORITIES = ['High', 'Medium', 'Low'];
 const TEAM       = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
 
 let _timelineItems = [];
+
+let _labelW = parseInt(localStorage.getItem('timeline_label_w') || '320');
+document.documentElement.style.setProperty('--label-w', _labelW + 'px');
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -760,7 +778,7 @@ async function renderGantt() {
   // ── Build rows ─────────────────────────────────────────────
   const body = document.getElementById('gantt-body');
   body.innerHTML = '';
-  body.style.width = (totalWidth + 220) + 'px'; // label-w + chart
+  body.style.width = (totalWidth + _labelW) + 'px';
 
   // Today line offset
   const todayOffset = Math.round((today - windowStart) / 86400000) * DAY_PX;
@@ -1058,6 +1076,41 @@ function toggleTheme() {
     });
   }
 })();
+
+// ── COLUMN RESIZE ─────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const handle = document.getElementById('label-resize-handle');
+  if (!handle) return;
+
+  handle.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const startX = e.clientX;
+    const startW = _labelW;
+
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+
+    function onMove(e) {
+      _labelW = Math.max(120, startW + e.clientX - startX);
+      document.documentElement.style.setProperty('--label-w', _labelW + 'px');
+      // update body width live
+      const body = document.getElementById('gantt-body');
+      if (body) {
+        const totalW = parseInt(body.style.width) || 0;
+        body.style.width = (totalW - startW + _labelW) + 'px';
+      }
+    }
+    function onUp() {
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+      localStorage.setItem('timeline_label_w', _labelW);
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+});
 
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
