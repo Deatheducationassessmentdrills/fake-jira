@@ -470,6 +470,7 @@ main {
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
 <script src="auth.js"></script>
+<script src="db.js"></script>
 </head>
 <body>
 
@@ -555,13 +556,9 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function loadItems() {
+async function loadItems() {
   try {
-    const raw = localStorage.getItem('backlog_items');
-    if (!raw) return [];
-    return JSON.parse(raw).map(i => ({
-      start_date: '', end_date: '', ...i
-    })).filter(i => !i.deleted_at && !i.archived);
+    return await DB.loadItems();
   } catch (e) { return []; }
 }
 
@@ -577,8 +574,8 @@ function setRange(months) {
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
-function renderGantt() {
-  const items = loadItems();
+async function renderGantt() {
+  const items = await loadItems();
   const dated   = items.filter(i => i.start_date || i.end_date);
   const undated = items.filter(i => !i.start_date && !i.end_date);
 
@@ -790,11 +787,6 @@ function toggleTheme() {
 // ── INIT ──────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   renderGantt();
-
-  // Re-render if localStorage changes (backlog updated in another tab)
-  window.addEventListener('storage', e => {
-    if (e.key === 'backlog_items') renderGantt();
-  });
 });
 </script>
 </body>
