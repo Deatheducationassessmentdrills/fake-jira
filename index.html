@@ -302,18 +302,22 @@
     grid-area: main;
     overflow: auto;
     padding: 24px 28px 40px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border2) transparent;
   }
+  main::-webkit-scrollbar { height: 6px; width: 6px; }
+  main::-webkit-scrollbar-track { background: transparent; }
+  main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
   /* ── BOARD ───────────────────────────────────────────────── */
   .board {
     display: flex;
-    gap: 14px;
-    min-width: max-content;
+    gap: 12px;
     align-items: flex-start;
   }
 
   .column {
-    width: 310px;
+    width: clamp(210px, calc((100vw - 348px) / 7), 285px);
     flex-shrink: 0;
   }
 
@@ -651,7 +655,7 @@
     .card-delete { opacity: 1; }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 900px) {
     body {
       grid-template-columns: 1fr;
       grid-template-rows: auto auto 1fr;
@@ -684,15 +688,15 @@
 
     header { padding: 0 16px; }
 
-    main { padding: 16px 12px 40px; overflow: auto; }
+    main { padding: 16px 12px 40px; overflow-x: auto; }
 
     .board {
-      flex-direction: column;
-      min-width: unset;
-      width: 100%;
+      flex-direction: row;
+      width: max-content;
+      padding-bottom: 12px;
     }
 
-    .column { width: 100%; }
+    .column { width: 260px; }
 
     .modal { padding: 20px 16px; border-radius: 10px; }
     .modal-title { font-size: 1.17rem; }
@@ -708,6 +712,9 @@
   @media (max-width: 480px) {
     .github-link span { display: none; }
     .github-link { padding: 6px 9px; }
+
+    .board { flex-direction: column; width: 100%; }
+    .column { width: 100%; }
   }
 
   .detail-reporter-select {
