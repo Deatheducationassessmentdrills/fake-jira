@@ -1135,18 +1135,8 @@ tbody tr:hover .row-actions { opacity: 1; }
 
 <script>
 // ── DATA ──────────────────────────────────────────────────────────────────────
-let items = [
-  { id: 1,  title: 'Set up GitHub repo & enable GitHub Pages',         status: 'progress', tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 2,  title: 'Replace Formspree endpoint with real form ID',     status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 3,  title: 'Update GitHub Issues URL in config',               status: 'backlog',  tags: ['Setup'],           boards: ['Fake JIRA to-do list'],                   priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 4,  title: 'Wire up Supabase for live data (pending CSO approval)', status: 'blocked', tags: ['Feature'],    boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 5,  title: 'Add multi-board support with cross-tagging',       status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 6,  title: 'Add SMS idea submission via Twilio',               status: 'ideas',    tags: ['Feature', 'Idea'], boards: [],                                         priority: 'Low',    date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 7,  title: 'Swap password gate for Supabase Auth',             status: 'backlog',  tags: ['Feature'],         boards: ['Fake JIRA to-do list'],                   priority: 'High',   date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-  { id: 8,  title: 'Link tokens.css to index.html and token-editor.html', status: 'backlog', tags: ['Setup','Design'], boards: ['Fake JIRA to-do list','Design System'], priority: 'Medium', date: '2025-04-24', notes: '', reporter: '', assignees: [], start_date: '', end_date: '' },
-];
+let items = [];
 
-let nextId = 100;
 let sortKey = 'title';
 let sortDir = 1;
 
