@@ -932,6 +932,87 @@
   @media (max-width: 768px) {
     .detail-panel { width: 100%; right: -100%; }
   }
+
+  /* ── COLUMN DRAG & DROP ──────────────────────────────────── */
+  .col-header { cursor: grab; }
+  .col-header:active { cursor: grabbing; }
+  .column.dragging { opacity: 0.35; }
+  .column.drag-over { box-shadow: inset 0 0 0 2px var(--accent); border-radius: 8px; }
+
+  /* ── COLUMN FILTER ───────────────────────────────────────── */
+  .col-filter-wrap { position: relative; }
+
+  .col-filter-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 8px;
+    z-index: 300;
+    min-width: 220px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    display: none;
+  }
+
+  .col-filter-dropdown.open { display: block; }
+
+  .col-filter-head {
+    font-size: 0.96rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding: 4px 8px 8px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .col-filter-reset {
+    font-size: 0.96rem;
+    color: var(--accent);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    padding: 0;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  .col-filter-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 8px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.96rem;
+    transition: background 0.1s;
+    user-select: none;
+  }
+
+  .col-filter-row:hover { background: var(--surface2); }
+  .col-filter-row-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .col-filter-row-label { flex: 1; color: var(--text); }
+
+  .col-filter-row-check {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: #111109;
+    background: transparent;
+  }
+
+  .col-filter-row-check.on { background: var(--accent); border-color: var(--accent); }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="config.js"></script>
@@ -987,6 +1068,10 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
       <span>Submit via GitHub</span>
     </a>
+    <div class="col-filter-wrap">
+      <button class="btn" id="col-filter-btn" onclick="toggleColFilter()">⊞ Columns</button>
+      <div class="col-filter-dropdown" id="col-filter-dropdown"></div>
+    </div>
     <button class="theme-toggle" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">🌙</button>
     <button class="theme-toggle sign-out-mobile" onclick="signOut()" title="Sign out">⏻</button>
     <button class="btn btn-primary" onclick="openSubmitModal()">+ Submit Idea</button>
@@ -1066,6 +1151,22 @@ const COLUMNS = [
 const TEAM      = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
 const PRIORITIES = ['High', 'Medium', 'Low'];
 
+// ─── COLUMN PREFS ─────────────────────────────────────────────────────────────
+let colOrder = JSON.parse(localStorage.getItem('kanban_col_order') || 'null') || COLUMNS.map(c => c.id);
+let hiddenCols = new Set(JSON.parse(localStorage.getItem('kanban_col_hidden') || '[]'));
+// Sync: add new columns to end, drop removed ones
+COLUMNS.forEach(c => { if (!colOrder.includes(c.id)) colOrder.push(c.id); });
+colOrder = colOrder.filter(id => COLUMNS.find(c => c.id === id));
+
+function getActiveCols() {
+  return colOrder.map(id => COLUMNS.find(c => c.id === id)).filter(c => c && !hiddenCols.has(c.id));
+}
+
+function saveColPrefs() {
+  localStorage.setItem('kanban_col_order', JSON.stringify(colOrder));
+  localStorage.setItem('kanban_col_hidden', JSON.stringify([...hiddenCols]));
+}
+
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 let items = [];
 
@@ -1074,10 +1175,11 @@ function render() {
   const board = document.getElementById('board');
   board.innerHTML = '';
 
-  COLUMNS.forEach(col => {
+  getActiveCols().forEach(col => {
     const cards = items.filter(i => i.status === col.id);
     const colEl = document.createElement('div');
     colEl.className = `column ${col.cls}`;
+    colEl.dataset.colId = col.id;
     colEl.innerHTML = `
       <div class="col-header">
         <div class="col-title">
@@ -1095,6 +1197,7 @@ function render() {
     board.appendChild(colEl);
   });
 
+  initColDrag();
   renderSidebarStats();
   updateHeaderSubtitle();
 }
@@ -1151,6 +1254,124 @@ function updateHeaderSubtitle() {
   const done  = items.filter(i => i.status === 'done').length;
   document.getElementById('header-subtitle').textContent =
     `${total} item${total !== 1 ? 's' : ''} · ${done} done`;
+}
+
+// ─── COLUMN DRAG & DROP ───────────────────────────────────────────────────────
+let _dragSrcId = null;
+
+function initColDrag() {
+  const board = document.getElementById('board');
+  board.querySelectorAll('.column').forEach(colEl => {
+    const colId = colEl.dataset.colId;
+
+    // Only start drag when mousedown is on the column header
+    colEl.addEventListener('mousedown', e => {
+      colEl.draggable = !!e.target.closest('.col-header');
+    });
+
+    colEl.addEventListener('dragstart', e => {
+      _dragSrcId = colId;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => colEl.classList.add('dragging'), 0);
+    });
+
+    colEl.addEventListener('dragend', () => {
+      _dragSrcId = null;
+      board.querySelectorAll('.column').forEach(c => c.classList.remove('dragging', 'drag-over'));
+    });
+
+    colEl.addEventListener('dragover', e => {
+      if (!_dragSrcId || _dragSrcId === colId) return;
+      e.preventDefault();
+      board.querySelectorAll('.column').forEach(c => c.classList.remove('drag-over'));
+      colEl.classList.add('drag-over');
+    });
+
+    colEl.addEventListener('dragleave', e => {
+      if (!colEl.contains(e.relatedTarget)) colEl.classList.remove('drag-over');
+    });
+
+    colEl.addEventListener('drop', e => {
+      e.preventDefault();
+      if (!_dragSrcId || _dragSrcId === colId) return;
+      const si = colOrder.indexOf(_dragSrcId);
+      const di = colOrder.indexOf(colId);
+      if (si !== -1 && di !== -1) {
+        colOrder.splice(si, 1);
+        colOrder.splice(di, 0, _dragSrcId);
+        saveColPrefs();
+        render();
+      }
+    });
+  });
+}
+
+// ─── COLUMN FILTER ────────────────────────────────────────────────────────────
+const COL_DOT_COLORS = {
+  ideas: 'var(--col-ideas)', backlog: 'var(--col-backlog)', progress: 'var(--col-progress)',
+  blocked: 'var(--col-blocked)', done: 'var(--col-done)', feature: 'var(--col-feature)',
+  backend: 'var(--col-backend)'
+};
+
+function toggleColFilter() {
+  const dd = document.getElementById('col-filter-dropdown');
+  if (dd.classList.contains('open')) {
+    dd.classList.remove('open');
+  } else {
+    buildColFilter();
+    dd.classList.add('open');
+    setTimeout(() => document.addEventListener('click', _colFilterOutside, { once: true }), 10);
+  }
+}
+
+function _colFilterOutside(e) {
+  const dd  = document.getElementById('col-filter-dropdown');
+  const btn = document.getElementById('col-filter-btn');
+  if (dd.contains(e.target) || btn.contains(e.target)) {
+    setTimeout(() => document.addEventListener('click', _colFilterOutside, { once: true }), 10);
+  } else {
+    dd.classList.remove('open');
+  }
+}
+
+function buildColFilter() {
+  const dd = document.getElementById('col-filter-dropdown');
+  dd.innerHTML = `
+    <div class="col-filter-head">
+      <span>Columns</span>
+      <button class="col-filter-reset" onclick="resetColPrefs();event.stopPropagation()">Reset</button>
+    </div>
+    ${colOrder.map(id => {
+      const col = COLUMNS.find(c => c.id === id);
+      if (!col) return '';
+      const vis = !hiddenCols.has(col.id);
+      return `<div class="col-filter-row" onclick="toggleColVis('${col.id}')">
+        <span class="col-filter-row-dot" style="background:${COL_DOT_COLORS[col.id]}"></span>
+        <span class="col-filter-row-label">${col.label}</span>
+        <span class="col-filter-row-check ${vis ? 'on' : ''}">${vis ? '✓' : ''}</span>
+      </div>`;
+    }).join('')}
+  `;
+}
+
+function toggleColVis(id) {
+  if (hiddenCols.has(id)) {
+    hiddenCols.delete(id);
+  } else {
+    if (getActiveCols().length <= 1) return;
+    hiddenCols.add(id);
+  }
+  saveColPrefs();
+  render();
+  buildColFilter();
+}
+
+function resetColPrefs() {
+  colOrder = COLUMNS.map(c => c.id);
+  hiddenCols = new Set();
+  saveColPrefs();
+  render();
+  buildColFilter();
 }
 
 // ─── SUBMIT ───────────────────────────────────────────────────────────────────
