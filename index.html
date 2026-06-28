@@ -24,6 +24,8 @@
     --col-progress: #f5a623;
     --col-blocked:  #ff4d6d;
     --col-done:     #3ecf8e;
+    --col-feature:  #c084fc;
+    --col-backend:  #22d3ee;
 
     --sidebar-w: 220px;
     --header-h:  56px;
@@ -458,18 +460,24 @@
   .col-progress .col-dot { background: var(--col-progress); }
   .col-blocked  .col-dot { background: var(--col-blocked); }
   .col-done     .col-dot { background: var(--col-done); }
+  .col-feature  .col-dot { background: var(--col-feature); }
+  .col-backend  .col-dot { background: var(--col-backend); }
 
   .col-ideas    .card { --col-color: var(--col-ideas); }
   .col-backlog  .card { --col-color: var(--col-backlog); }
   .col-progress .card { --col-color: var(--col-progress); }
   .col-blocked  .card { --col-color: var(--col-blocked); }
   .col-done     .card { --col-color: var(--col-done); }
+  .col-feature  .card { --col-color: var(--col-feature); }
+  .col-backend  .card { --col-color: var(--col-backend); }
 
-  .tag-ideas    { background: rgba(58,143,255,0.12);  color: #5aa0ff; }
-  .tag-backlog  { background: rgba(160,160,184,0.1);  color: var(--col-backlog); }
-  .tag-progress { background: rgba(245,166,35,0.12);  color: #f5a623; }
-  .tag-blocked  { background: rgba(255,77,109,0.12);  color: #ff6b85; }
-  .tag-done     { background: rgba(62,207,142,0.12);  color: #3ecf8e; }
+  .tag-ideas    { background: rgba(58,143,255,0.12);   color: #5aa0ff; }
+  .tag-backlog  { background: rgba(160,160,184,0.1);   color: var(--col-backlog); }
+  .tag-progress { background: rgba(245,166,35,0.12);   color: #f5a623; }
+  .tag-blocked  { background: rgba(255,77,109,0.12);   color: #ff6b85; }
+  .tag-done     { background: rgba(62,207,142,0.12);   color: #3ecf8e; }
+  .tag-feature  { background: rgba(192,132,252,0.12);  color: #c084fc; }
+  .tag-backend  { background: rgba(34,211,238,0.12);   color: #22d3ee; }
 
   /* ── MODAL ───────────────────────────────────────────────── */
   .modal-overlay {
@@ -591,11 +599,13 @@
   .status-pill:not(.active) { opacity: 1; }
   .status-pill:hover { filter: brightness(1.1); }
 
-  .tag-ideas.active    { background: #3a8fff; color: #fff; border-color: #3a8fff; }
-  .tag-backlog.active  { background: #a0a0b8; color: #fff; border-color: #a0a0b8; }
+  .tag-ideas.active    { background: #3a8fff; color: #fff;    border-color: #3a8fff; }
+  .tag-backlog.active  { background: #a0a0b8; color: #fff;    border-color: #a0a0b8; }
   .tag-progress.active { background: #f5a623; color: #111109; border-color: #f5a623; }
-  .tag-blocked.active  { background: #ff4d6d; color: #fff; border-color: #ff4d6d; }
+  .tag-blocked.active  { background: #ff4d6d; color: #fff;    border-color: #ff4d6d; }
   .tag-done.active     { background: #3ecf8e; color: #111109; border-color: #3ecf8e; }
+  .tag-feature.active  { background: #c084fc; color: #111109; border-color: #c084fc; }
+  .tag-backend.active  { background: #22d3ee; color: #111109; border-color: #22d3ee; }
 
   /* ── GITHUB LINK ─────────────────────────────────────────── */
   .github-link {
@@ -1037,13 +1047,16 @@ const GITHUB_ISSUES_URL = 'https://github.com/YOUR-USERNAME/YOUR-REPO/issues/new
 document.getElementById('github-issues-link').href = GITHUB_ISSUES_URL;
 
 const COLUMNS = [
-  { id: 'ideas',    label: 'Ideas',       cls: 'col-ideas',    tagCls: 'tag-ideas' },
-  { id: 'backlog',  label: 'Backlog',     cls: 'col-backlog',  tagCls: 'tag-backlog' },
-  { id: 'progress', label: 'In Progress', cls: 'col-progress', tagCls: 'tag-progress' },
-  { id: 'blocked',  label: 'Blocked',     cls: 'col-blocked',  tagCls: 'tag-blocked' },
-  { id: 'done',     label: 'Done',        cls: 'col-done',     tagCls: 'tag-done' },
+  { id: 'ideas',    label: 'Ideas',               cls: 'col-ideas',    tagCls: 'tag-ideas' },
+  { id: 'backlog',  label: 'Backlog',             cls: 'col-backlog',  tagCls: 'tag-backlog' },
+  { id: 'progress', label: 'In Progress',         cls: 'col-progress', tagCls: 'tag-progress' },
+  { id: 'blocked',  label: 'Blocked',             cls: 'col-blocked',  tagCls: 'tag-blocked' },
+  { id: 'done',     label: 'Done',                cls: 'col-done',     tagCls: 'tag-done' },
+  { id: 'feature',  label: 'Feature',             cls: 'col-feature',  tagCls: 'tag-feature' },
+  { id: 'backend',  label: 'Backend Improvement', cls: 'col-backend',  tagCls: 'tag-backend' },
 ];
-const TEAM = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
+const TEAM      = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
+const PRIORITIES = ['High', 'Medium', 'Low'];
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 let items = [];
@@ -1098,14 +1111,18 @@ function renderSidebarStats() {
   const blocked  = items.filter(i => i.status === 'blocked').length;
   const backlog  = items.filter(i => i.status === 'backlog').length;
   const ideas    = items.filter(i => i.status === 'ideas').length;
+  const feature  = items.filter(i => i.status === 'feature').length;
+  const backend  = items.filter(i => i.status === 'backend').length;
   const pct      = total > 0 ? Math.round(done / total * 100) : 0;
 
   const rows = [
-    { color: 'var(--col-progress)', label: 'In Progress', n: progress },
-    { color: 'var(--col-blocked)',  label: 'Blocked',     n: blocked  },
-    { color: 'var(--col-done)',     label: 'Done',        n: done     },
-    { color: 'var(--col-backlog)',  label: 'Backlog',     n: backlog  },
-    { color: 'var(--col-ideas)',    label: 'Ideas',       n: ideas    },
+    { color: 'var(--col-progress)', label: 'In Progress',        n: progress },
+    { color: 'var(--col-blocked)',  label: 'Blocked',            n: blocked  },
+    { color: 'var(--col-done)',     label: 'Done',               n: done     },
+    { color: 'var(--col-backlog)',  label: 'Backlog',            n: backlog  },
+    { color: 'var(--col-ideas)',    label: 'Ideas',              n: ideas    },
+    { color: 'var(--col-feature)',  label: 'Feature',            n: feature  },
+    { color: 'var(--col-backend)',  label: 'Backend Improvement',n: backend  },
   ];
 
   const statsEl = document.getElementById('sidebar-stats');
@@ -1176,6 +1193,12 @@ function openDetail(id) {
       <div class="detail-field-label">Status</div>
       <select class="detail-field-select" onchange="updateDetailField(${id},'status',this.value)">
         ${COLUMNS.map(c => `<option value="${c.id}" ${item.status===c.id?'selected':''}>${c.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Priority</div>
+      <select class="detail-field-select" onchange="updateDetailField(${id},'priority',this.value)">
+        ${PRIORITIES.map(p => `<option ${item.priority===p?'selected':''}>${p}</option>`).join('')}
       </select>
     </div>
     <div class="detail-field">

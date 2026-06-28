@@ -572,6 +572,8 @@ td {
 .status-progress { color: #f5a623; background: rgba(245,166,35,0.1); }
 .status-blocked  { color: #ff6b85; background: rgba(255,77,109,0.1); }
 .status-done     { color: #3ecf8e; background: rgba(62,207,142,0.1); }
+.status-feature  { color: #c084fc; background: rgba(192,132,252,0.1); }
+.status-backend  { color: #22d3ee; background: rgba(34,211,238,0.1); }
 
 /* ── TAGS ────────────────────────────────────────────────── */
 .tags-cell {
@@ -1099,6 +1101,8 @@ tbody tr:hover .row-actions { opacity: 1; }
       <option value="progress">In Progress</option>
       <option value="blocked">Blocked</option>
       <option value="done">Done</option>
+      <option value="feature">Feature</option>
+      <option value="backend">Backend Improvement</option>
     </select>
     <select class="sidebar-filter-select" id="filter-tag" onchange="filterRows()">
       <option value="">All tags</option>
@@ -1226,8 +1230,8 @@ let sortKey = 'title';
 let sortDir = 1;
 
 const ALL_TAGS     = ['Feature', 'Bug', 'Setup', 'Design', 'Research', 'Idea', 'Content'];
-const STATUSES     = ['ideas', 'backlog', 'progress', 'blocked', 'done'];
-const STATUS_LABELS = { ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress', blocked: 'Blocked', done: 'Done' };
+const STATUSES     = ['ideas', 'backlog', 'progress', 'blocked', 'done', 'feature', 'backend'];
+const STATUS_LABELS = { ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress', blocked: 'Blocked', done: 'Done', feature: 'Feature', backend: 'Backend Improvement' };
 const PRIORITIES   = ['High', 'Medium', 'Low'];
 const TEAM = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
 let boards = [];
@@ -1676,11 +1680,13 @@ function updateStats() {
   const statsEl = document.getElementById('sidebar-stats');
   if (!statsEl) return;
   const rows = [
-    { color: '#f5a623',        label: 'In Progress', n: counts.progress },
-    { color: '#ff6b85',        label: 'Blocked',     n: counts.blocked  },
-    { color: '#3ecf8e',        label: 'Done',        n: counts.done     },
-    { color: 'var(--muted)',   label: 'Backlog',     n: counts.backlog  },
-    { color: '#5aa0ff',        label: 'Ideas',       n: counts.ideas    },
+    { color: '#f5a623',        label: 'In Progress',        n: counts.progress },
+    { color: '#ff6b85',        label: 'Blocked',            n: counts.blocked  },
+    { color: '#3ecf8e',        label: 'Done',               n: counts.done     },
+    { color: 'var(--muted)',   label: 'Backlog',            n: counts.backlog  },
+    { color: '#5aa0ff',        label: 'Ideas',              n: counts.ideas    },
+    { color: '#c084fc',        label: 'Feature',            n: counts.feature  },
+    { color: '#22d3ee',        label: 'Backend Improvement',n: counts.backend  },
   ];
   statsEl.innerHTML = `
     <div class="sidebar-stats-label">Summary — ${items.length} total</div>

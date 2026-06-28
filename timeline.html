@@ -24,6 +24,8 @@
   --col-progress: #f5a623;
   --col-blocked:  #ff4d6d;
   --col-done:     #3ecf8e;
+  --col-feature:  #c084fc;
+  --col-backend:  #22d3ee;
 
   --sidebar-w: 220px;
   --header-h:  56px;
@@ -414,6 +416,107 @@ main {
   flex-shrink: 0;
 }
 
+/* ── DETAIL PANEL ───────────────────────────────────────────── */
+.detail-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 150; opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.detail-overlay.open { opacity: 1; pointer-events: all; }
+
+.detail-panel {
+  position: fixed; top: 0; right: -440px;
+  width: 440px; height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 160; display: flex; flex-direction: column;
+  transition: right 0.25s cubic-bezier(0.4,0,0.2,1);
+  overflow: hidden;
+}
+.detail-panel.open { right: 0; }
+
+.detail-panel-header {
+  display: flex; align-items: flex-start;
+  justify-content: space-between; gap: 12px;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.detail-panel-title-input {
+  flex: 1; background: transparent; border: none; border-radius: 6px;
+  padding: 4px 6px;
+  font-family: 'Syne', sans-serif; font-size: 1.17rem; font-weight: 700;
+  color: var(--text); outline: none; width: 100%; resize: none;
+  line-height: 1.4; transition: background 0.15s;
+}
+.detail-panel-title-input:hover { background: var(--surface2); }
+.detail-panel-title-input:focus { background: var(--surface2); box-shadow: 0 0 0 1px var(--accent); border-radius: 6px; }
+
+.detail-panel-close {
+  background: none; border: none; color: var(--muted); cursor: pointer;
+  font-size: 1.17rem; padding: 4px 6px; border-radius: 4px;
+  line-height: 1; flex-shrink: 0; transition: all 0.15s;
+}
+.detail-panel-close:hover { background: var(--surface2); color: var(--text); }
+
+.detail-panel-body {
+  flex: 1; overflow-y: auto; padding: 20px;
+  display: flex; flex-direction: column; gap: 16px;
+}
+.detail-field { display: flex; flex-direction: column; gap: 5px; }
+.detail-field-label {
+  font-size: 0.8rem; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted);
+}
+.detail-field-select {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 8px 11px; font-family: 'DM Mono', monospace;
+  font-size: 0.96rem; color: var(--text); outline: none;
+  transition: border-color 0.15s; cursor: pointer;
+}
+.detail-field-select:focus { border-color: var(--accent); }
+.detail-field-select option { background: var(--surface2); }
+.detail-field-textarea {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--border); border-radius: 6px;
+  padding: 9px 11px; font-family: 'DM Mono', monospace;
+  font-size: 0.96rem; color: var(--text); outline: none;
+  resize: vertical; min-height: 90px; transition: border-color 0.15s;
+}
+.detail-field-textarea:focus { border-color: var(--accent); }
+.detail-field-date { font-size: 0.96rem; color: var(--muted2); padding: 2px 0; }
+.detail-assignees-wrap { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+
+.assignee-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--surface2); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 2px 8px; font-size: 0.8rem; color: var(--text);
+}
+.pill-remove { cursor: pointer; color: var(--muted); font-size: 0.9rem; line-height: 1; }
+.pill-remove:hover { color: var(--text); }
+
+.tag-add-btn {
+  background: none; border: 1px dashed var(--border2); border-radius: 20px;
+  padding: 2px 8px; font-size: 0.8rem; color: var(--muted); cursor: pointer;
+  font-family: 'DM Mono', monospace; transition: all 0.15s;
+}
+.tag-add-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+.assignee-picker {
+  position: fixed; z-index: 400;
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 6px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  min-width: 140px;
+}
+.assignee-picker-item {
+  padding: 6px 10px; border-radius: 5px;
+  font-size: 0.9rem; cursor: pointer; color: var(--text);
+  transition: background 0.1s;
+}
+.assignee-picker-item:hover { background: var(--surface2); }
+
 /* Toast */
 .toast {
   position: fixed;
@@ -535,6 +638,18 @@ main {
 </main>
 
 <div class="gantt-tooltip" id="tooltip" style="display:none"></div>
+<!-- ITEM DETAIL PANEL -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detail-panel">
+  <div class="detail-panel-header">
+    <textarea class="detail-panel-title-input" id="detail-panel-title" rows="2" onchange="saveDetailTitle()"></textarea>
+    <button class="detail-panel-close" onclick="closeDetail()" title="Close">✕</button>
+  </div>
+  <div class="detail-panel-body" id="detail-panel-body">
+    <!-- populated by openDetail() -->
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -545,12 +660,21 @@ const STATUS_COLORS = {
   progress: 'var(--col-progress)',
   blocked:  'var(--col-blocked)',
   done:     'var(--col-done)',
+  feature:  'var(--col-feature)',
+  backend:  'var(--col-backend)',
 };
 
 const STATUS_LABELS = {
   ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress',
-  blocked: 'Blocked', done: 'Done'
+  blocked: 'Blocked', done: 'Done',
+  feature: 'Feature', backend: 'Backend Improvement',
 };
+
+const STATUSES   = ['ideas', 'backlog', 'progress', 'blocked', 'done', 'feature', 'backend'];
+const PRIORITIES = ['High', 'Medium', 'Low'];
+const TEAM       = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
+
+let _timelineItems = [];
 
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -575,7 +699,8 @@ function setRange(months) {
 
 // ── RENDER ────────────────────────────────────────────────────────────────────
 async function renderGantt() {
-  const items = await loadItems();
+  _timelineItems = await loadItems();
+  const items = _timelineItems;
   const dated   = items.filter(i => i.start_date || i.end_date);
   const undated = items.filter(i => !i.start_date && !i.end_date);
 
@@ -649,10 +774,13 @@ async function renderGantt() {
     // Label cell
     const labelCell = document.createElement('div');
     labelCell.className = 'gantt-item-label';
+    labelCell.style.cursor = 'pointer';
+    labelCell.title = 'Open details';
     labelCell.innerHTML = `
       <span class="gantt-item-dot" style="background:${color}"></span>
       <span class="gantt-item-title" title="${escHtml(item.title)}">${escHtml(item.title)}</span>
     `;
+    labelCell.addEventListener('click', () => openDetail(item.id));
     row.appendChild(labelCell);
 
     // Grid cell
@@ -707,6 +835,8 @@ async function renderGantt() {
       bar.addEventListener('mouseenter', e => showTooltip(e, tipLines.join('<br>')));
       bar.addEventListener('mousemove',  e => moveTooltip(e));
       bar.addEventListener('mouseleave', hideTooltip);
+      bar.addEventListener('click', () => { hideTooltip(); openDetail(item.id); });
+      bar.style.cursor = 'pointer';
 
       grid.appendChild(bar);
     }
@@ -722,7 +852,7 @@ async function renderGantt() {
   if (undated.length > 0) {
     undatedGrid.innerHTML = undated.map(item => {
       const color = STATUS_COLORS[item.status] || 'var(--muted)';
-      return `<span class="undated-pill">
+      return `<span class="undated-pill" style="cursor:pointer" onclick="openDetail(${item.id})" title="Open details">
         <span class="undated-pill-dot" style="background:${color}"></span>
         ${escHtml(item.title)}
       </span>`;
@@ -763,6 +893,151 @@ function moveTooltip(e) {
 function hideTooltip() {
   tooltip.style.display = 'none';
 }
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  if (type === 'error') t.style.borderColor = '#ff4d6d';
+  else t.style.borderColor = '';
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ── DETAIL PANEL ──────────────────────────────────────────────────────────────
+let _detailOpenId = null;
+
+function openDetail(id) {
+  const item = _timelineItems.find(i => i.id === id);
+  if (!item) return;
+  _detailOpenId = id;
+
+  document.getElementById('detail-panel-title').value = item.title;
+
+  const d = item.date ? new Date(item.date).toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'}) : '';
+
+  document.getElementById('detail-panel-body').innerHTML = `
+    <div class="detail-field">
+      <div class="detail-field-label">Status</div>
+      <select class="detail-field-select" onchange="updateDetailField(${id},'status',this.value)">
+        ${STATUSES.map(s => `<option value="${s}" ${item.status===s?'selected':''}>${STATUS_LABELS[s]}</option>`).join('')}
+      </select>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Priority</div>
+      <select class="detail-field-select" onchange="updateDetailField(${id},'priority',this.value)">
+        ${PRIORITIES.map(p => `<option ${item.priority===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Reporter</div>
+      <select class="detail-field-select" onchange="updateDetailField(${id},'reporter',this.value)">
+        <option value="">—</option>
+        ${TEAM.map(n => `<option ${item.reporter===n?'selected':''}>${n}</option>`).join('')}
+      </select>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Assignees</div>
+      <div class="detail-assignees-wrap" id="detail-assignees-${id}">
+        ${renderDetailAssigneePills(item)}
+      </div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Start Date</div>
+      <input type="date" class="detail-field-select" style="color-scheme:dark" value="${item.start_date||''}" onchange="updateDetailField(${id},'start_date',this.value)">
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">End Date</div>
+      <input type="date" class="detail-field-select" style="color-scheme:dark" value="${item.end_date||''}" onchange="updateDetailField(${id},'end_date',this.value)">
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Added</div>
+      <div class="detail-field-date">${d || '—'}</div>
+    </div>
+    <div class="detail-field">
+      <div class="detail-field-label">Notes</div>
+      <textarea class="detail-field-textarea" onchange="updateDetailField(${id},'notes',this.value)" placeholder="No notes...">${escHtml(item.notes||'')}</textarea>
+    </div>
+  `;
+
+  document.getElementById('detail-panel').classList.add('open');
+  document.getElementById('detail-overlay').classList.add('open');
+}
+
+function renderDetailAssigneePills(item) {
+  const id = item.id;
+  return (item.assignees||[]).map(n =>
+    `<span class="assignee-pill">${escHtml(n)}<span class="pill-remove" onclick="removeAssigneeDetail(${id},'${n}')">×</span></span>`
+  ).join('') + `<button class="tag-add-btn" onclick="showDetailAssigneePicker(this,${id})">+ assign</button>`;
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  document.getElementById('detail-overlay').classList.remove('open');
+  _detailOpenId = null;
+}
+
+function saveDetailTitle() {
+  if (_detailOpenId === null) return;
+  const item = _timelineItems.find(i => i.id === _detailOpenId);
+  if (!item) return;
+  const val = document.getElementById('detail-panel-title').value.trim();
+  if (val) { item.title = val; DB.updateItem(_detailOpenId, { title: val }); renderGantt(); }
+}
+
+function updateDetailField(id, field, val) {
+  const item = _timelineItems.find(i => i.id === id);
+  if (!item) return;
+  item[field] = val;
+  DB.updateItem(id, { [field]: val });
+  if (field === 'start_date' || field === 'end_date') renderGantt();
+}
+
+let activeDetailAssigneePicker = null;
+
+function showDetailAssigneePicker(btn, id) {
+  if (activeDetailAssigneePicker) { activeDetailAssigneePicker.remove(); activeDetailAssigneePicker = null; }
+  const item = _timelineItems.find(i => i.id === id);
+  const available = TEAM.filter(n => !(item.assignees||[]).includes(n));
+  if (!available.length) return;
+  const picker = document.createElement('div');
+  picker.className = 'assignee-picker';
+  picker.innerHTML = available.map(n =>
+    `<div class="assignee-picker-item" onclick="addAssigneeDetail(${id},'${n}')">${n}</div>`
+  ).join('');
+  const rect = btn.getBoundingClientRect();
+  picker.style.top  = (rect.bottom + 4) + 'px';
+  picker.style.left = rect.left + 'px';
+  document.body.appendChild(picker);
+  activeDetailAssigneePicker = picker;
+  setTimeout(() => document.addEventListener('click', () => {
+    if (activeDetailAssigneePicker) { activeDetailAssigneePicker.remove(); activeDetailAssigneePicker = null; }
+  }, { once: true }), 10);
+}
+
+function addAssigneeDetail(id, name) {
+  const item = _timelineItems.find(i => i.id === id);
+  if (!item) return;
+  if (!item.assignees) item.assignees = [];
+  if (!item.assignees.includes(name)) {
+    item.assignees.push(name);
+    const wrap = document.getElementById(`detail-assignees-${id}`);
+    if (wrap) wrap.innerHTML = renderDetailAssigneePills(item);
+    DB.updateItem(id, { assignees: item.assignees });
+  }
+}
+
+function removeAssigneeDetail(id, name) {
+  const item = _timelineItems.find(i => i.id === id);
+  if (!item) return;
+  item.assignees = (item.assignees||[]).filter(n => n !== name);
+  const wrap = document.getElementById(`detail-assignees-${id}`);
+  if (wrap) wrap.innerHTML = renderDetailAssigneePills(item);
+  DB.updateItem(id, { assignees: item.assignees });
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeDetail(); });
 
 // ── THEME ─────────────────────────────────────────────────────────────────────
 function toggleTheme() {
