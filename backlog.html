@@ -595,6 +595,7 @@ td {
 .status-done     { color: #3ecf8e; background: rgba(62,207,142,0.1); }
 .status-feature  { color: #c084fc; background: rgba(192,132,252,0.1); }
 .status-backend  { color: #22d3ee; background: rgba(34,211,238,0.1); }
+.status-admin    { color: #eab308; background: rgba(234,179,8,0.1); }
 
 /* ── TAGS ────────────────────────────────────────────────── */
 .tags-cell {
@@ -1124,6 +1125,7 @@ tbody tr:hover .row-actions { opacity: 1; }
       <option value="done">Done</option>
       <option value="feature">Feature</option>
       <option value="backend">Backend Improvement</option>
+      <option value="admin">Admin</option>
     </select>
     <select class="sidebar-filter-select" id="filter-tag" onchange="filterRows()">
       <option value="">All tags</option>
@@ -1251,8 +1253,8 @@ let sortKey = 'title';
 let sortDir = 1;
 
 const ALL_TAGS     = ['Feature', 'Bug', 'Setup', 'Design', 'Research', 'Idea', 'Content'];
-const STATUSES     = ['ideas', 'backlog', 'progress', 'blocked', 'done', 'feature', 'backend'];
-const STATUS_LABELS = { ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress', blocked: 'Blocked', done: 'Done', feature: 'Feature', backend: 'Backend Improvement' };
+const STATUSES     = ['ideas', 'backlog', 'progress', 'blocked', 'done', 'feature', 'backend', 'admin'];
+const STATUS_LABELS = { ideas: 'Ideas', backlog: 'Backlog', progress: 'In Progress', blocked: 'Blocked', done: 'Done', feature: 'Feature', backend: 'Backend Improvement', admin: 'Admin' };
 const PRIORITIES   = ['High', 'Medium', 'Low'];
 const TEAM = ['Brandon', 'Jaivin', 'Dave', 'Kate', 'Darien'];
 let boards = [];
@@ -1708,6 +1710,7 @@ function updateStats() {
     { color: '#5aa0ff',        label: 'Ideas',              n: counts.ideas    },
     { color: '#c084fc',        label: 'Feature',            n: counts.feature  },
     { color: '#22d3ee',        label: 'Backend Improvement',n: counts.backend  },
+    { color: '#eab308',        label: 'Admin',              n: counts.admin    },
   ];
   statsEl.innerHTML = `
     <div class="sidebar-stats-label">Summary — ${items.length} total</div>
